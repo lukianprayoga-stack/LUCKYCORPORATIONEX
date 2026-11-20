@@ -83,32 +83,42 @@ button{cursor:pointer}
 .bubble{background:#fff;color:#141a33;font:700 12px/1.25 "Nunito Sans",sans-serif;padding:5px 9px;border-radius:10px;max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 10px -4px rgba(0,0,0,.4)}
 .nm{font:600 13px/1 Fredoka,sans-serif;color:#fff;padding:3px 9px;border-radius:99px;margin:4px 0 2px}
 .working .bubble{background:#141a33;color:#fff}.done .bubble{background:#1fae6b;color:#fff}.thinking .bubble{background:#ffd34d}
-.eye{transform-box:fill-box;transform-origin:center;animation:blink 5.5s infinite}
-.bodyg{animation:breathe 3.6s ease-in-out infinite}
-.leg,.arm{transform-box:fill-box;transform-origin:50% 0}
-.walking .bodyg{animation:bob .25s ease-in-out infinite alternate}
-.walking .leg.l,.walking .arm.r{animation:swing .5s ease-in-out infinite alternate}
-.walking .leg.r,.walking .arm.l{animation:swing .5s ease-in-out infinite alternate-reverse}
-.working .arm{animation:type .28s ease-in-out infinite alternate}.working .arm.r{animation-delay:.14s}
-.working .head{animation:nod .9s ease-in-out infinite alternate}
-.thinking .head{transform-box:fill-box;transform-origin:50% 100%;animation:tilt 1s ease-in-out infinite alternate}
-.done .bodyg{animation:hop .45s ease-in-out 3}
+.eye{transform-box:fill-box;transform-origin:center;animation:blink 5s infinite}
+.bodyg{transform-box:fill-box;transform-origin:50% 100%;animation:breathe 2.8s ease-in-out infinite}
+.sprout{transform-box:fill-box;transform-origin:50% 100%;animation:wiggle 3.2s ease-in-out infinite}
+.arm{transform-box:fill-box;transform-origin:50% 10%}
+.walking .bodyg{animation:squash .26s ease-in-out infinite alternate}
+.walking .leg.l{animation:step .26s ease-in-out infinite alternate}
+.walking .leg.r{animation:step .26s ease-in-out infinite alternate-reverse}
+.walking .arm.l{animation:wave .26s ease-in-out infinite alternate}
+.walking .arm.r{animation:wave .26s ease-in-out infinite alternate-reverse}
+.walking .sprout{animation:wiggle .52s ease-in-out infinite}
+.working .arm{animation:type .22s ease-in-out infinite alternate}.working .arm.r{animation-delay:.11s}
+.working .head{animation:nod .8s ease-in-out infinite alternate}
+.working .sprout{animation:spin 1.2s linear infinite}
+.thinking .head,.thinking .sprout{transform-box:fill-box;transform-origin:50% 100%;animation:tilt 1s ease-in-out infinite alternate}
+.done .bodyg{animation:jump .5s cubic-bezier(.3,1.6,.6,1) 3}
+.spark{opacity:0}.done .spark{animation:pop .5s ease-out 3}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+@keyframes breathe{50%{transform:scale(1.025,.975)}}
+@keyframes squash{from{transform:translateY(0) scale(1.06,.94)}to{transform:translateY(-7px) scale(.96,1.05)}}
+@keyframes step{to{transform:translateY(-4px)}}
+@keyframes wave{from{transform:rotate(-25deg)}to{transform:rotate(25deg)}}
+@keyframes wiggle{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes type{from{transform:rotate(-20deg)}to{transform:rotate(-55deg)}}
+@keyframes nod{to{transform:translateY(1.6px)}}
+@keyframes tilt{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
+@keyframes jump{0%,100%{transform:translateY(0) scale(1)}15%{transform:scale(1.12,.86)}50%{transform:translateY(-16px) scale(.94,1.08)}}
+@keyframes pop{0%{opacity:0;transform:scale(.4)}40%{opacity:1}100%{opacity:0;transform:scale(1.3) translateY(-8px)}}
+@keyframes rise{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(-34px);opacity:0}}
+@keyframes glow{from{opacity:.55}to{opacity:1}}
 .fx{opacity:0}.working .fx{opacity:1}
 .fx rect{animation:rise 1.4s linear infinite}.fx rect:nth-child(2){animation-delay:.47s}.fx rect:nth-child(3){animation-delay:.94s}
 .paper{opacity:0}.carry .paper{opacity:1}
 .cup{opacity:0}.coffee .cup{opacity:1}
 .glow{transition:background .3s}
 .desk-on .glow{background:var(--c)!important;animation:glow .8s ease-in-out infinite alternate}
-@keyframes blink{0%,93%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
-@keyframes breathe{50%{transform:translateY(1.3px)}}
-@keyframes bob{to{transform:translateY(-3px)}}
-@keyframes swing{from{transform:rotate(-20deg)}to{transform:rotate(20deg)}}
-@keyframes type{from{transform:rotate(-30deg)}to{transform:rotate(-48deg)}}
-@keyframes nod{to{transform:translateY(1.5px)}}
-@keyframes tilt{from{transform:rotate(-8deg)}to{transform:rotate(8deg)}}
-@keyframes hop{50%{transform:translateY(-12px)}}
-@keyframes rise{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(-34px);opacity:0}}
-@keyframes glow{from{opacity:.55}to{opacity:1}}
 .cam{position:absolute;right:12px;top:12px;display:flex;gap:6px;z-index:5;flex-wrap:wrap;justify-content:flex-end}
 .cam button{background:rgba(255,255,255,.92);color:#141a33;border:0;border-radius:12px;min-width:44px;min-height:44px;padding:0 12px;font-weight:700;box-shadow:0 4px 12px -6px rgba(0,0,0,.4)}
 .cam button[aria-pressed=true]{background:#141a33;color:#fff}
@@ -207,25 +217,25 @@ button{cursor:pointer}
 {
 const CLAUDE_URL='https://claude.ai/artifact/MhyzG7a3uGXQmWeSRT2uwg';
 const TEAM=[
- {id:'lucky',name:'Lucky',role:'CEO Assistant',color:'#ff5a36',skin:'#f2c29b',hair:'#2b1d14',style:0,tie:true,
+ {id:'lucky',name:'Lucky',role:'CEO Assistant',color:'#ff5a36',scarf:'#141a33',tie:true,
   focus:'koordinator: menyusun rencana & prioritas harian, to-do, agenda, keputusan cepat, hal umum yang tidak jelas divisinya',
   kw:['rencana','prioritas','agenda','to do','todo','plan','hari ini','besok','ringkas']},
- {id:'ops',name:'Raka',role:'Operasional Toko',color:'#2f6fed',skin:'#c98e62',hair:'#1b1410',style:1,
+ {id:'ops',name:'Raka',role:'Operasional Toko',color:'#2f6fed',scarf:'#ff5a36',
   focus:'opening/closing toko, stok & stock opname, visual merchandising/display, gudang, kebersihan, SOP harian, checklist',
   kw:['opening','closing','stok','stock','opname','display','visual','vm','gudang','kebersihan','sop','barang','rak','planogram']},
- {id:'sales',name:'Sinta',role:'Sales & Target',color:'#e39b00',skin:'#f0bf96',hair:'#3a2216',style:2,
+ {id:'sales',name:'Sinta',role:'Sales & Target',color:'#f2709c',scarf:'#ffffff',
   focus:'target harian/bulanan, analisa penjualan, KPI (ATV, UPT, konversi), strategi closing, ide program penjualan',
   kw:['target','sales','penjualan','omzet','omset','kpi','atv','upt','konversi','traffic','achievement']},
- {id:'team',name:'Dimas',role:'Tim & Shift',color:'#16a37a',skin:'#d9a273',hair:'#111',style:0,
+ {id:'team',name:'Dimas',role:'Tim & Shift',color:'#16a37a',scarf:'#ffe08a',
   focus:'jadwal shift, briefing tim, coaching & evaluasi crew, pembagian tugas, cuti/absensi, training produk',
   kw:['shift','jadwal','briefing','crew','karyawan','tim','coaching','absen','cuti','training','evaluasi','pembagian']},
- {id:'kreatif',name:'Nala',role:'Kreatif & Konten',color:'#c03fc4',skin:'#f4c7a4',hair:'#5a2e1a',style:3,
+ {id:'kreatif',name:'Nala',role:'Kreatif & Konten',color:'#a64fe0',scarf:'#7fe3d0',
   focus:'caption & konten media sosial, ide promo, teks poster/banner, brief desain untuk Canva, materi komunikasi pelanggan',
   kw:['canva','caption','konten','poster','instagram','tiktok','desain','banner','story','promo','feed','copywriting']},
- {id:'laporan',name:'Bima',role:'Laporan & Arsip',color:'#4b5bd6',skin:'#cf9a6f',hair:'#222',style:1,
+ {id:'laporan',name:'Bima',role:'Laporan & Arsip',color:'#4b5bd6',scarf:'#ffb07a',
   focus:'laporan harian/mingguan/bulanan, rekap, notulen rapat, email & surat, dokumen untuk Google Drive/Spreadsheet',
   kw:['laporan','report','rekap','notulen','email','surat','dokumen','drive','spreadsheet','arsip','memo']},
- {id:'sistem',name:'Tari',role:'OFA Hub & SH Kit',color:'#0f9fb5',skin:'#efbd93',hair:'#2a1a12',style:2,
+ {id:'sistem',name:'Tari',role:'OFA Hub & SH Kit',color:'#0f9fb5',scarf:'#ffffff',
   focus:'pekerjaan di OFA Hub dan SH Kit: checklist langkah input, panduan proses, daftar data yang perlu disiapkan, catatan follow-up. Belum terhubung langsung ke sistem tersebut',
   kw:['ofa','sh kit','shkit','hub','sistem','aplikasi','input','order','online']}
 ];
@@ -260,33 +270,35 @@ function plane(x,y,z,w,h,html,style='',cls=''){return `<div class="f ${cls}" sty
 function bill(x,y,html,w=60,h=80){return `<div class="f" style="transform:translate3d(${x}px,${y}px,0)"><div class="f" style="left:${-w/2}px;top:${-h}px;width:${w}px;height:${h}px;transform-origin:50% 100%;transform:rotateZ(calc(var(--rot) * -1)) rotateX(-90deg)">${html}</div></div>`}
 const LEAVES='<svg viewBox="0 0 60 80" width="60" height="80"><g fill="#2fa65a"><ellipse cx="20" cy="40" rx="9" ry="22" transform="rotate(-24 20 40)"/><ellipse cx="40" cy="40" rx="9" ry="22" transform="rotate(24 40 40)"/><ellipse cx="30" cy="30" rx="9" ry="26"/></g><g fill="#23894a"><ellipse cx="25" cy="55" rx="6" ry="16" transform="rotate(-40 25 55)"/><ellipse cx="36" cy="55" rx="6" ry="16" transform="rotate(40 36 55)"/></g></svg>';
 function plant(x,y){return box(x-14,y-14,0,28,28,26,'#b8623a')+`<div class="f" style="transform:translate3d(0,0,26px)">${bill(x,y,LEAVES)}</div>`}
-function hairPath(st){
-  if(st===1)return '<path d="M25 31 Q23 7 45 6 Q68 7 65 31 Q63 19 53 17 Q45 23 33 19 Q27 23 25 31Z"/><circle cx="45" cy="4" r="8"/>';
-  if(st===2)return '<path d="M23 33 Q22 6 45 6 Q68 6 67 33 L68 53 Q61 45 62 29 Q45 20 28 29 Q29 45 22 53Z"/>';
-  if(st===3)return '<path d="M24 33 Q22 5 45 5 Q69 5 66 33 Q59 15 45 17 Q31 15 24 33Z"/><circle cx="66" cy="19" r="7"/><circle cx="24" cy="19" r="7"/>';
-  return '<path d="M25 30 Q25 6 45 6 Q65 6 65 30 Q57 16 45 18 Q33 16 25 30Z"/>';
-}
+function shadeHex(h,f){const n=parseInt(h.slice(1),16);const c=[n>>16,n>>8&255,n&255].map(v=>Math.round(f<0?v*(1+f):v+(255-v)*f));return '#'+c.map(v=>v.toString(16).padStart(2,'0')).join('')}
 function personSVG(m){
+  const c=m.color,dk=shadeHex(c,-.28),lt=shadeHex(c,.45),id='g'+m.id;
+  const neck=m.tie
+    ?'<path d="M45 99 L33 92 L33 106Z M45 99 L57 92 L57 106Z" fill="#141a33"/><circle cx="45" cy="99" r="3.5" fill="#141a33"/>'
+    :`<path d="M15 92 Q45 106 75 92 L75 99 Q45 113 15 99Z" fill="${m.scarf}"/><path d="M60 101 L66 116 L57 113 L55 102Z" fill="${m.scarf}"/>`;
   return `<svg viewBox="0 0 90 130" aria-hidden="true">
+  <defs><radialGradient id="${id}" cx="34%" cy="30%" r="75%"><stop offset="0" stop-color="${lt}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${dk}"/></radialGradient></defs>
   <g class="bodyg">
-    <rect class="leg l" x="33" y="94" width="11" height="32" rx="5" fill="#2c3150"/>
-    <rect class="leg r" x="46" y="94" width="11" height="32" rx="5" fill="#2c3150"/>
-    <g class="arm l"><rect x="13" y="54" width="12" height="34" rx="6" fill="${m.color}"/><circle cx="19" cy="88" r="5.5" fill="${m.skin}"/></g>
-    <g class="arm r"><rect x="65" y="54" width="12" height="34" rx="6" fill="${m.color}"/><circle cx="71" cy="88" r="5.5" fill="${m.skin}"/></g>
-    <rect x="22" y="50" width="46" height="50" rx="17" fill="${m.color}"/>
-    ${m.tie?'<path d="M41 52 L49 52 L47 60 L51 78 L45 84 L39 78 L43 60Z" fill="#141a33"/>':'<path d="M35 51 Q45 61 55 51" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="3" stroke-linecap="round"/>'}
-    <g class="paper"><rect x="62" y="72" width="20" height="24" rx="2" fill="#fff" stroke="#141a33" stroke-width="1.5"/><rect x="66" y="78" width="12" height="2.5" fill="#ff5a36"/><rect x="66" y="84" width="10" height="2" fill="#9aa0b8"/></g>
-    <g class="cup"><rect x="64" y="80" width="13" height="15" rx="3" fill="#fff" stroke="#141a33" stroke-width="1.5"/></g>
+    <ellipse class="leg l" cx="33" cy="123" rx="10" ry="6" fill="${dk}"/>
+    <ellipse class="leg r" cx="57" cy="123" rx="10" ry="6" fill="${dk}"/>
+    <g class="arm l"><ellipse cx="12" cy="88" rx="6.5" ry="13" fill="${c}" transform="rotate(14 12 88)"/></g>
+    <g class="arm r"><ellipse cx="78" cy="88" rx="6.5" ry="13" fill="${c}" transform="rotate(-14 78 88)"/></g>
+    <path d="M45 40 C70 40 81 62 81 89 C81 113 66 125 45 125 C24 125 9 113 9 89 C9 62 20 40 45 40Z" fill="url(#${id})"/>
+    <ellipse cx="31" cy="54" rx="9" ry="5" fill="#fff" opacity=".35" transform="rotate(-25 31 54)"/>
+    ${neck}
+    <g class="sprout"><path d="M45 41 Q43 32 46 24" fill="none" stroke="#2f9a52" stroke-width="3" stroke-linecap="round"/>
+      <g fill="#46c06a"><ellipse cx="46" cy="16" rx="4.6" ry="6.5"/><ellipse cx="46" cy="30" rx="4.6" ry="6.5" transform="rotate(0)"/><ellipse cx="39" cy="23" rx="6.5" ry="4.6"/><ellipse cx="53" cy="23" rx="6.5" ry="4.6"/></g><circle cx="46" cy="23" r="2.4" fill="#2f9a52"/></g>
+    <g class="paper"><rect x="62" y="78" width="20" height="24" rx="2" fill="#fff" stroke="#141a33" stroke-width="1.5"/><rect x="66" y="84" width="12" height="2.5" fill="#ff5a36"/><rect x="66" y="90" width="10" height="2" fill="#9aa0b8"/></g>
+    <g class="cup"><rect x="64" y="84" width="13" height="15" rx="3" fill="#fff" stroke="#141a33" stroke-width="1.5"/><path d="M68 80 q-2 -3 0 -6 M73 80 q2 -3 0 -6" stroke="#fff" stroke-width="1.5" fill="none"/></g>
     <g class="head">
-      <circle cx="45" cy="32" r="20" fill="${m.skin}"/>
-      <g fill="${m.hair}">${hairPath(m.style)}</g>
-      <ellipse class="eye" cx="38" cy="34" rx="2.4" ry="2.7" fill="#141a33"/>
-      <ellipse class="eye" cx="52" cy="34" rx="2.4" ry="2.7" fill="#141a33"/>
-      <circle cx="34" cy="40" r="3" fill="#ff7a7a" opacity=".35"/><circle cx="56" cy="40" r="3" fill="#ff7a7a" opacity=".35"/>
-      <path d="M40 42 Q45 46 50 42" fill="none" stroke="#141a33" stroke-width="1.8" stroke-linecap="round"/>
+      <ellipse cx="34" cy="69" rx="10" ry="11.5" fill="#fff"/><ellipse cx="56" cy="69" rx="10" ry="11.5" fill="#fff"/>
+      <g class="eye"><circle cx="35.5" cy="71" r="5.2" fill="#1d2140"/><circle cx="54.5" cy="71" r="5.2" fill="#1d2140"/><circle cx="37.3" cy="68.8" r="1.8" fill="#fff"/><circle cx="56.3" cy="68.8" r="1.8" fill="#fff"/></g>
+      <circle cx="24" cy="84" r="4" fill="#ff8a8a" opacity=".45"/><circle cx="66" cy="84" r="4" fill="#ff8a8a" opacity=".45"/>
+      <path class="mouth" d="M39 85 Q45 91 51 85" fill="none" stroke="#1d2140" stroke-width="2.2" stroke-linecap="round"/>
     </g>
   </g>
-  <g class="fx"><rect x="28" y="-6" width="7" height="7" rx="2" fill="${m.color}"/><rect x="42" y="-10" width="6" height="6" rx="2" fill="#fff"/><rect x="56" y="-5" width="7" height="7" rx="2" fill="${m.color}"/></g>
+  <g class="fx"><rect x="28" y="2" width="7" height="7" rx="2" fill="${c}"/><rect x="42" y="-2" width="6" height="6" rx="2" fill="#fff"/><rect x="56" y="3" width="7" height="7" rx="2" fill="${c}"/></g>
+  <g class="spark" fill="#ffd34d"><path d="M10 40 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3Z"/><path d="M78 30 l2.4 5.6 5.6 2.4 -5.6 2.4 -2.4 5.6 -2.4 -5.6 -5.6 -2.4 5.6 -2.4Z"/><path d="M70 6 l2 4.5 4.5 2 -4.5 2 -2 4.5 -2 -4.5 -4.5 -2 4.5 -2Z"/></g>
   </svg>`;
 }
 const spot=id=>{const p=POS[id];return{x:p.x,y:p.y-(p.big?62:50)}};
