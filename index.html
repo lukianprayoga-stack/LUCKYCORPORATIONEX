@@ -593,7 +593,7 @@ Jawab HANYA dengan JSON satu baris, tanpa teks lain:
 {"divisi":"<id divisi>","judul":"<judul tugas, maks 7 kata>","prioritas":"normal|penting|mendesak"}`}
 /* ===== OFA Hub data (Google Sheets lewat koneksi pengguna) ===== */
 const OFA_SETS={
- dashboard_ra:{label:'Dashboard RA',range:"'Dashboard RA'!A4:J20",mode:'all',desc:'performa tiap RA (transaksi, net sales, basket size, QTY, UPT, % EAC) + ringkasan toko (total net sales, basket size, UPT, target toko), tahun berjalan'},
+ sales_bulan_ini:{label:'Sales Bulan Ini (DSR)',computed:true,desc:'performa tiap RA bulan berjalan dihitung langsung dari Database DSR seperti Peringkat RA di OFA Hub: gross sales, target, % capai, Endless Aisle, transaksi, QTY, UPT, basket size, % EAC, ringkasan toko, proyeksi & kebutuhan harian, sales 7 hari terakhir (isi cari "YYYY-MM" untuk bulan lain)'},
  target_bulanan:{label:'Target Bulanan',range:"'Target Bulanan'!A1:G400",mode:'last',n:40,desc:'target sales gross, Endless Aisle & voucher per bulan untuk TOKO dan tiap RA'},
  traffic_harian:{label:'Traffic Harian',range:"'Traffic Harian'!A1:H500",mode:'last',n:31,desc:'jumlah pengunjung per slot jam per hari (31 hari terakhir)'},
  produk_terlaris:{label:'Analisis Produk',range:"'Analisis Produk'!A1:I80",mode:'all',desc:'peringkat produk terlaris tahun berjalan: qty, transaksi, net/gross sales, diskon'},
@@ -610,7 +610,7 @@ const OFA_SETS={
  sh_kit_masukan:{label:'SH Kit Masukan',range:"'SH Kit Masukan'!A1:Z1000",mode:'last',n:30,desc:'masukan tim lewat SH Kit'},
  sh_kit_aktivitas:{label:'SH Kit Aktivitas',range:"'SH Kit Aktivitas'!A1:Z1000",mode:'last',n:30,desc:'log aktivitas pengguna SH Kit'}
 };
-const OFA_FOR={lucky:Object.keys(OFA_SETS),sales:['dashboard_ra','target_bulanan','traffic_harian','produk_terlaris','promo'],ops:['barang_masuk','stok_pusat','mutasi_harian','new_arrival','permintaan_barang','jadwal_blind_counting'],team:['rapor_ra','dashboard_ra','target_bulanan','jadwal_blind_counting','sh_kit_aktivitas'],kreatif:['promo','new_arrival','produk_terlaris'],laporan:Object.keys(OFA_SETS),sistem:['jadwal_blind_counting','permintaan_barang','pica','tinggalan','sh_kit_masukan','sh_kit_aktivitas','new_arrival','promo','barang_masuk']};
+const OFA_FOR={lucky:Object.keys(OFA_SETS),sales:['sales_bulan_ini','target_bulanan','traffic_harian','produk_terlaris','promo'],ops:['barang_masuk','stok_pusat','mutasi_harian','new_arrival','permintaan_barang','jadwal_blind_counting'],team:['rapor_ra','sales_bulan_ini','target_bulanan','jadwal_blind_counting','sh_kit_aktivitas'],kreatif:['promo','new_arrival','produk_terlaris'],laporan:Object.keys(OFA_SETS),sistem:['jadwal_blind_counting','permintaan_barang','pica','tinggalan','sh_kit_masukan','sh_kit_aktivitas','new_arrival','promo','barang_masuk']};
 const PII=/phone|e-?mail|customer name|nama pelanggan|telepon|no\.?\s*hp|whats ?app|\bwa\b|alamat/i;
 let ofaId='',ofaRef=null;const ofaCache={};
 const ofaReady=()=>!!(mcp&&ofaId);
@@ -622,7 +622,48 @@ async function ofaValues(range){
   const p=(r&&r.payload)||{};const v=p.values||(p.content&&p.content.values)||[];
   ofaCache[range]={at:Date.now(),v};return v;
 }
+const BLN_ID=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const normName=v=>String(v||'').replace(/\s+/g,' ').trim().toUpperCase();
+const niceName=v=>normName(v).toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase());
+const toNum=v=>{const t=String(v??'').replace(/rp/i,'').trim();if(!t)return 0;const c=/^-?[\d.]+,\d+$/.test(t)?t.replace(/\./g,'').replace(',','.'):/^-?\d{1,3}(\.\d{3})+$/.test(t)?t.replace(/\./g,''):t.replace(/,/g,'');return Number(c)||0};
+const rpJt=n=>'Rp '+(n/1e6).toFixed(1).replace('.',',')+' jt';
+const pctS=(a,b)=>b?(a/b*100).toFixed(1).replace('.',',')+'%':'–';
+async function salesMonth(cari){
+  const want=/^\d{4}-\d{2}$/.test(String(cari||'').trim())?String(cari).trim():ym(new Date());
+  const colC=await ofaValues("'Database DSR'!C1:C40000");
+  let lo=-1,hi=-1;colC.forEach((r,i)=>{if(String((r&&r[0])||'').startsWith(want)){if(lo<0)lo=i;hi=i}});
+  if(lo<0)return{sumber:'OFA Hub · Database DSR',catatan:'Belum ada transaksi bulan '+want+' di Database DSR.',kolom:[],baris:[]};
+  const rows=await ofaValues(`'Database DSR'!A${lo+1}:AB${hi+1}`);
+  const tgt=await ofaValues("'Target Bulanan'!A1:G600");const T={};
+  for(const r of tgt)if(String(r[0]||'').trim()===want)T[normName(r[1])]={s:toNum(r[2]),e:toNum(r[3])};
+  const RA={},day={},inv={},bad=/cancel|batal|void|return|retur/i,nonMerch=/PAPER BAG|PACKING/i;
+  let last='';
+  for(const r of rows){
+    const dt=String(r[2]||'');if(!dt.startsWith(want))continue;
+    if(bad.test(String(r[4]||'')))continue;
+    const name=normName(r[14])||'TANPA NAMA',invNo=String(r[1]||r[0]||''),type=String(r[5]||''),gross=toNum(r[15]),net=toNum(r[27]),qty=toNum(r[12]),sku=String(r[6]||''),item=String(r[7]||'');
+    const o=RA[name]||(RA[name]={g:0,n:0,q:0,ea:0,inv:new Set(),eaInv:new Set(),eac:new Set()});
+    o.g+=gross;o.n+=net;
+    if(!(nonMerch.test(item)||/^(98|81)/.test(sku)))o.q+=qty;
+    o.inv.add(invNo);if(/endless/i.test(type)){o.ea+=gross;o.eaInv.add(invNo)}
+    if(String(r[24]||'').trim())o.eac.add(invNo);
+    const dk=dt.slice(0,10);const D=day[dk]||(day[dk]={g:0,inv:new Set()});D.g+=gross;D.inv.add(invNo);
+    if(dk>last)last=dk;
+  }
+  const names=Object.keys(RA).sort((a,b)=>RA[b].g-RA[a].g);
+  const tot={g:0,n:0,q:0,ea:0,trx:0,eac:0};
+  const baris=names.map(nm=>{const o=RA[nm],trx=o.inv.size,t=T[nm]||{};tot.g+=o.g;tot.n+=o.n;tot.q+=o.q;tot.ea+=o.ea;tot.trx+=trx;tot.eac+=o.eac.size;
+    return[niceName(nm),rpJt(o.g),t.s?rpJt(t.s):'–',pctS(o.g,t.s),rpJt(o.ea),t.e?rpJt(t.e):'–',pctS(o.ea,t.e),String(trx),String(o.q),trx?(o.q/trx).toFixed(2).replace('.',','):'–',trx?rpJt(o.n/trx).replace(' jt',' jt'):'–',pctS(o.eac.size,trx)]});
+  const [Y,M]=want.split('-').map(Number),dim=new Date(Y,M,0).getDate(),el=last?Number(last.slice(8,10)):0,rem=Math.max(0,dim-el);
+  const TS=(T['TOKO']||{}).s||0,TE=(T['TOKO']||{}).e||0;
+  baris.unshift(['TOKO (total)',rpJt(tot.g),TS?rpJt(TS):'–',pctS(tot.g,TS),rpJt(tot.ea),TE?rpJt(TE):'–',pctS(tot.ea,TE),String(tot.trx),String(tot.q),tot.trx?(tot.q/tot.trx).toFixed(2).replace('.',','):'–',tot.trx?rpJt(tot.n/tot.trx):'–',pctS(tot.eac,tot.trx)]);
+  const proj=el?tot.g/el*dim:0;
+  const days=Object.keys(day).sort().slice(-7).map(k=>`${k}: ${rpJt(day[k].g)} (${day[k].inv.size} trx)`).join('; ');
+  const ket=`Periode 1–${el} ${BLN_ID[M-1]} ${Y} (transaksi terakhir ${last}); ${dim} hari dalam bulan, sisa ${rem} hari. Proyeksi akhir bulan ${rpJt(proj)}${TS?' = '+pctS(proj,TS)+' dari target':''}. ${TS&&rem?'Kebutuhan per hari untuk capai target: '+rpJt(Math.max(0,TS-tot.g)/rem)+'. ':''}Sales 7 hari terakhir: ${days}. Definisi: transaksi = invoice unik; UPT = QTY (tanpa paper bag/packing) ÷ transaksi; basket size = net sales ÷ transaksi; EAC = invoice dengan nomor telepon pelanggan; EA = Endless Aisle (gross).`;
+  return{sumber:'OFA Hub · Database DSR (dihitung langsung, toko 7014)',keterangan:ket,kolom:['RA','Gross Sales','Target','% Capai','EA Gross','Target EA','% EA','Trx','QTY','UPT','Basket Size','% EAC'],baris};
+}
 async function readOfa(key,cari){
+  if(key==='sales_bulan_ini')return salesMonth(cari);
   const d=OFA_SETS[key];if(!d)throw new Error('Dataset tidak dikenal. Pilih: '+Object.keys(OFA_SETS).join(', '));
   if(d.mode==='search'&&!String(cari||'').trim())throw new Error('Dataset '+key+' wajib memakai parameter "cari".');
   const vals=await ofaValues(d.range);
@@ -653,7 +694,7 @@ function ofaTool(id,used){
       finally{if(w){w.mood='';updateOffice()}}
     }};
 }
-const OFA_CORE={lucky:['dashboard_ra','target_bulanan','traffic_harian'],sales:['dashboard_ra','target_bulanan','traffic_harian','produk_terlaris'],team:['dashboard_ra','target_bulanan','rapor_ra','jadwal_blind_counting'],laporan:['dashboard_ra','target_bulanan','traffic_harian','produk_terlaris','barang_masuk'],ops:['barang_masuk','permintaan_barang','mutasi_harian','jadwal_blind_counting'],kreatif:['produk_terlaris','new_arrival'],sistem:['jadwal_blind_counting','permintaan_barang','pica','tinggalan','sh_kit_masukan']};
+const OFA_CORE={lucky:['sales_bulan_ini','target_bulanan','traffic_harian'],sales:['sales_bulan_ini','target_bulanan','traffic_harian','produk_terlaris'],team:['sales_bulan_ini','target_bulanan','rapor_ra','jadwal_blind_counting'],laporan:['sales_bulan_ini','target_bulanan','traffic_harian','produk_terlaris','barang_masuk'],ops:['barang_masuk','permintaan_barang','mutasi_harian','jadwal_blind_counting'],kreatif:['produk_terlaris','new_arrival'],sistem:['jadwal_blind_counting','permintaan_barang','pica','tinggalan','sh_kit_masukan']};
 async function ensureOfa(){
   if(!ofaId&&ofaRef){try{const s=await ofaRef.get();if(s.exists)ofaId=String(s.data().spreadsheetId||'')}catch(e){}}
   ofaChip();return ofaReady();
@@ -669,7 +710,7 @@ async function ofaContext(div,used){
       if(k==='target_bulanan'){const f=rows.filter(r=>months.some(m=>r.join(' ').includes(m)));rows=f.length?f:rows.slice(-12)}
       if(!rows.length)continue;
       let txt=`### ${OFA_SETS[k].label}${o.keterangan?' ('+o.keterangan+')':''}\n${o.kolom.join(' | ')}\n`+rows.map(r=>r.join(' | ')).join('\n');
-      if(txt.length>3000)txt=txt.slice(0,3000)+'\n…(dipotong)';
+      if(txt.length>(k==='sales_bulan_ini'?5000:3000))txt=txt.slice(0,k==='sales_bulan_ini'?5000:3000)+'\n…(dipotong)';
       parts.push(txt);used.add(OFA_SETS[k].label);
     }catch(e){errs.push(OFA_SETS[k].label+': '+((e&&e.message)||'gagal'))}
   }
@@ -696,7 +737,7 @@ Aturan menulis:
 ${ctx?`DATA ASLI TOKO DARI OFA HUB (EIGER Store 7014 Soekarno Solo Baru) — gunakan angka ini, jangan tulis tempat isian untuk data yang sudah ada di sini. Jika profil toko kosong, anggap data ini sebagai profil toko:
 ${ctx}
 
-`:''}Akses data tambahan: kamu punya alat baca_data_ofa untuk membaca data ASLI toko dari OFA Hub. Pakai alat itu setiap kali tugas menyangkut angka atau data toko (sales, target, traffic, RA, produk, stok, barang masuk, promo, new arrival, blind counting, PICA, tinggalan, SH Kit). Nama dataset yang tersedia: ${Object.keys(OFA_SETS).map(k=>k+' ('+OFA_SETS[k].desc+')').join('; ')}. Yang paling relevan untukmu: ${(OFA_FOR[m.id]||[]).join(', ')}. Hitung dari angka yang kamu baca; jangan mengarang. Tambahkan bagian "## Sumber data" berisi dataset dan periode yang dipakai.`:''}`}
+`:''}Akses data tambahan: kamu punya alat baca_data_ofa untuk membaca data ASLI toko dari OFA Hub. Pakai alat itu setiap kali tugas menyangkut angka atau data toko (sales, target, traffic, RA, produk, stok, barang masuk, promo, new arrival, blind counting, PICA, tinggalan, SH Kit). Nama dataset yang tersedia: ${Object.keys(OFA_SETS).map(k=>k+' ('+OFA_SETS[k].desc+')').join('; ')}. Yang paling relevan untukmu: ${(OFA_FOR[m.id]||[]).join(', ')}. Untuk performa RA dan sales bulan berjalan, SELALU pakai sales_bulan_ini (dihitung langsung dari Database DSR, sama seperti Peringkat RA di OFA Hub) dan sebutkan semua RA yang ada di tabelnya. Hitung dari angka yang kamu baca; jangan mengarang. Tambahkan bagian "## Sumber data" berisi dataset dan periode yang dipakai.`:''}`}
 function dispatch(id,div){transit.add(id);render();deliver(div,()=>{transit.delete(id);pump()})}
 async function route(id){
   const t=tasks.find(x=>x.id===id);if(!t)return;
