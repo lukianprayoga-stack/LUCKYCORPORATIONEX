@@ -1,6 +1,6 @@
 # Lucky Corporation HQ
 
-Kantor 3D bergaya film animasi berisi tim karyawan AI pribadi untuk Store Head. Pegawainya adalah **Lucky Sprouts**, maskot orisinal Lucky Corporation: makhluk bulat dengan tunas daun semanggi di kepala dan syal berwarna sesuai divisi. Lucky (CEO Assistant) menerima perintah, membagi tugas ke divisi yang tepat, lalu berjalan mengantarkannya ke meja karyawan.
+Kantor 3D WebGL (Three.js) bergaya kantor kartun yang sibuk, dengan dinding bata, meja abu-abu, monitor tabung, tumpukan kertas, dan kertas beterbangan. Pegawainya tujuh manusia kartun kantoran orisinal: kemeja, dasi warna divisi, sebagian berkacamata. Lucky (CEO Assistant) menerima perintah, membagi tugas ke divisi yang tepat, lalu berjalan mengantarkannya ke meja karyawan.
 
 | Karyawan | Divisi |
 |---|---|
@@ -14,8 +14,8 @@ Kantor 3D bergaya film animasi berisi tim karyawan AI pribadi untuk Store Head. 
 
 ## Fitur
 
-- Kantor 3D (CSS 3D murni, tanpa library): geser untuk memutar, scroll/cubit untuk zoom, tombol Tur untuk kamera otomatis.
-- Karyawan bergerak: badan memantul saat berjalan, tunas berputar saat bekerja, melompat dengan kilauan saat tugas selesai, Lucky berjalan mengantar tugas, karyawan sesekali mengambil kopi.
+- Kantor 3D WebGL dengan cahaya dan bayangan nyata: geser untuk memutar, scroll/cubit untuk zoom, tombol Tur untuk kamera otomatis. Kalau browser tidak mendukung WebGL, papan tugas tetap berfungsi.
+- Pegawai bergerak: berjalan dengan tangan dan kaki berayun, mengetik dengan layar monitor menyala, Lucky membawa kertas tugas, pegawai mengambil kopi, dan kertas beterbangan saat tugas selesai.
 - Papan tugas: Antrian → Dikerjakan → Siap dicek → Selesai.
 - Profil toko yang dibaca semua karyawan sebelum bekerja.
 
