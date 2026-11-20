@@ -62,6 +62,11 @@ button{cursor:pointer}
 .cam{position:absolute;right:12px;top:12px;display:flex;gap:6px;z-index:5;flex-wrap:wrap;justify-content:flex-end}
 .cam button{background:rgba(255,255,255,.92);color:#141a33;border:0;border-radius:12px;min-width:44px;min-height:44px;padding:0 12px;font-weight:700;box-shadow:0 4px 12px -6px rgba(0,0,0,.4)}
 .cam button[aria-pressed=true]{background:#141a33;color:#fff}
+.stage.full{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;border-radius:0;z-index:60;margin:0}
+.stage:fullscreen{width:100vw;height:100vh;border-radius:0}
+body.noscroll{overflow:hidden}
+.fullhint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:6;display:none;font-size:13px;font-weight:600;color:#fff;background:rgba(20,26,51,.75);padding:6px 12px;border-radius:99px;white-space:nowrap;transition:opacity .6s}
+.stage.full .fullhint{display:block}.stage.full .hint{display:none}
 .rooms{position:absolute;left:12px;top:12px;z-index:5;display:flex;gap:4px;background:rgba(255,255,255,.92);padding:4px;border-radius:14px;box-shadow:0 4px 12px -6px rgba(0,0,0,.4);flex-wrap:wrap;max-width:calc(100% - 24px)}
 .rooms button{border:0;background:none;color:#141a33;border-radius:10px;min-height:40px;padding:0 12px;font-weight:700;font-size:14px}
 .rooms button[aria-pressed=true]{background:#1B2A4A;color:#fff}
@@ -150,7 +155,9 @@ button{cursor:pointer}
       <button type="button" id="camR" aria-label="Putar kanan">⟳</button>
       <button type="button" id="camTour" aria-pressed="true">Tur</button>
       <button type="button" id="camReset">Reset</button>
+      <button type="button" id="camFull" aria-pressed="false" title="Layar penuh"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M1.5 5.5v-4h4M10.5 1.5h4v4M14.5 10.5v4h-4M5.5 14.5h-4v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Layar penuh</span></button>
     </div>
+    <div class="fullhint" id="fullHint">Tekan Esc atau tombol "Keluar" untuk kembali</div>
     <div class="rooms" role="group" aria-label="Pilih ruangan">
       <button type="button" data-room="toko" aria-pressed="true">Operasional Toko</button>
       <button type="button" data-room="studio" aria-pressed="false">Lukky Studio</button>
@@ -589,7 +596,7 @@ function init3D(){
   stage.addEventListener('wheel',e=>{e.preventDefault();stopTour();cam.anim=null;cam.r=Math.min(36,Math.max(7,cam.r*(e.deltaY>0?1.08:.92)))},{passive:false});
   $('#camL').onclick=()=>{stopTour();cam.yaw-=.6};$('#camR').onclick=()=>{stopTour();cam.yaw+=.6};
   const ROOMS={toko:{x:0,z:-.6,r:17.5},studio:{x:SX,z:-.6,r:13.5},all:{x:7.8,z:-.4,r:28}};let room='toko';
-  function goRoom(k){room=k;cam.anim=Object.assign({},ROOMS[k]);document.querySelectorAll('.rooms button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.room===k))}
+  function goRoom(k){room=k;window.__room=k;cam.anim=Object.assign({},ROOMS[k]);document.querySelectorAll('.rooms button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.room===k))}
   document.querySelectorAll('.rooms button').forEach(b=>b.onclick=()=>goRoom(b.dataset.room));
   window.__goRoom=goRoom;
   $('#camReset').onclick=()=>{cam.yaw=.42;cam.pitch=.58;goRoom(room)};
@@ -1094,6 +1101,30 @@ function aiChip(){
 }
 
 
+/* fullscreen office */
+{
+  const st=$('#stage'),btn=$('#camFull');let before='toko',hintT=null;
+  const isFull=()=>st.classList.contains('full');
+  function setFull(on){
+    if(on===isFull())return;
+    st.classList.toggle('full',on);document.body.classList.toggle('noscroll',on);
+    btn.setAttribute('aria-pressed',on);btn.querySelector('span').textContent=on?'Keluar':'Layar penuh';
+    if(on){before=window.__room||'toko';if(window.__goRoom)window.__goRoom('all');
+      const h=$('#fullHint');h.style.opacity=1;clearTimeout(hintT);hintT=setTimeout(()=>{h.style.opacity=0},3500)}
+    else if(window.__goRoom)window.__goRoom(before);
+  }
+  btn.addEventListener('click',async()=>{
+    if(!isFull()){
+      setFull(true);
+      try{if(st.requestFullscreen&&!document.fullscreenElement)await st.requestFullscreen()}catch(e){/* frame may refuse: keep the window-filling view */}
+    }else{
+      if(document.fullscreenElement){try{await document.exitFullscreen()}catch(e){}}
+      setFull(false);
+    }
+  });
+  document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&isFull())setFull(false)});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isFull()&&!openId)setFull(false)});
+}
 /* boot */
 buildLabels();
 {const opt=m=>`<option value="${m.id}">${esc(m.name)} · ${esc(m.role)}</option>`;
