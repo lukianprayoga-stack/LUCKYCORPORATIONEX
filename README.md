@@ -19,6 +19,10 @@ Kantor 3D WebGL (Three.js) bergaya kantor kartun yang sibuk, dengan dinding bata
 - Papan tugas: Antrian → Dikerjakan → Siap dicek → Selesai.
 - Profil toko yang dibaca semua karyawan sebelum bekerja.
 
+## Data OFA Hub
+
+Di versi Claude, karyawan bisa membaca data asli toko dari spreadsheet OFA Hub (DSR/Dashboard RA, target bulanan, traffic, produk terlaris, stok pusat, barang masuk, promo, new arrival, blind counting, PICA, tinggalan, SH Kit) lewat koneksi Google Sheets pemilik. Kolom data pelanggan (telepon, email, nama) dibuang sebelum data dibaca AI. ID spreadsheet disimpan di pengaturan akun Claude, tidak di kode ini.
+
 ## Dua cara membuka
 
 1. **Versi Claude (AI aktif)**: https://claude.ai/artifact/MhyzG7a3uGXQmWeSRT2uwg

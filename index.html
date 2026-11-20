@@ -84,6 +84,9 @@ button{cursor:pointer}
 .prof{margin-top:22px;background:var(--surf);border-radius:18px;padding:12px 16px}
 .prof summary{cursor:pointer;font-weight:700;min-height:32px;display:flex;align-items:center}
 .prof textarea{width:100%;min-height:96px;margin:8px 0}
+.ofa-set{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}.ofa-set label{display:block;margin-bottom:6px}
+.ofa-row{display:flex;gap:8px;flex-wrap:wrap}.ofa-row input{flex:1 1 260px;border:2px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;font-size:16px;min-height:44px}
+.src{margin-top:12px;font-size:13px;color:var(--muted);background:var(--surf);border-radius:10px;padding:8px 12px}
 .ov{position:fixed;inset:0;background:rgba(8,12,34,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:20}
 .ov.on{display:flex}
 .sheet{background:var(--bg);width:100%;max-width:780px;max-height:90vh;overflow:auto;border-radius:22px;padding:clamp(16px,3vw,28px)}
@@ -114,6 +117,7 @@ button{cursor:pointer}
       <span class="chip" id="cAi"><i></i>Menghubungkan AI…</span>
       <span class="chip" id="cDb"><i></i>Menyiapkan penyimpanan…</span>
       <span class="chip" id="cDrive"><i></i>Google Drive</span>
+      <span class="chip" id="cOfa"><i></i>Data OFA Hub</span>
     </div>
   </div>
   <form class="cmd" id="cmd" autocomplete="off">
@@ -152,6 +156,9 @@ button{cursor:pointer}
     <summary>Profil toko — dibaca semua karyawan sebelum bekerja</summary>
     <textarea id="prof" placeholder="Contoh: Toko di mall, 6 crew + 1 kasir, jam buka 10.00–22.00, target bulan ini Rp …, kategori terlaris: tas & sepatu hiking, sedang ada promo …"></textarea>
     <button class="btn pri" id="profSave" type="button">Simpan profil</button> <span class="note" id="profNote"></span>
+    <div class="ofa-set"><label for="ofaId"><b>Spreadsheet OFA Hub</b> — tempel link atau ID Google Sheets yang dipakai OFA Hub</label>
+    <div class="ofa-row"><input id="ofaId" type="text" inputmode="url" placeholder="https://docs.google.com/spreadsheets/d/…" autocomplete="off"><button class="btn pri" id="ofaSave" type="button">Sambungkan</button></div>
+    <span class="note" id="ofaNote"></span></div>
   </details>
 </div>
 
@@ -180,7 +187,7 @@ const TEAM=[
   focus:'laporan harian/mingguan/bulanan, rekap, notulen rapat, email & surat, dokumen untuk Google Drive/Spreadsheet',
   kw:['laporan','report','rekap','notulen','email','surat','dokumen','drive','spreadsheet','arsip','memo']},
  {id:'sistem',name:'Tari',role:'OFA Hub & SH Kit',color:'#0f9fb5',skin:'#eebf95',hairC:'#2b1a12',hair:'long',glasses:false,
-  focus:'pekerjaan di OFA Hub dan SH Kit: checklist langkah input, panduan proses, daftar data yang perlu disiapkan, catatan follow-up. Belum terhubung langsung ke sistem tersebut',
+  focus:'pekerjaan di OFA Hub dan SH Kit (Store Head Kit): membaca dan merangkum datanya, follow-up blind counting, permintaan barang, PICA, barang tinggalan, masukan & aktivitas tim di SH Kit, checklist langkah input',
   kw:['ofa','sh kit','shkit','hub','sistem','aplikasi','input','order','online']}
 ];
 const BY=Object.fromEntries(TEAM.map(m=>[m.id,m]));
@@ -584,6 +591,68 @@ Perintah: """${t.text}"""
 
 Jawab HANYA dengan JSON satu baris, tanpa teks lain:
 {"divisi":"<id divisi>","judul":"<judul tugas, maks 7 kata>","prioritas":"normal|penting|mendesak"}`}
+/* ===== OFA Hub data (Google Sheets lewat koneksi pengguna) ===== */
+const OFA_SETS={
+ dashboard_ra:{label:'Dashboard RA',range:"'Dashboard RA'!A4:J20",mode:'all',desc:'performa tiap RA (transaksi, net sales, basket size, QTY, UPT, % EAC) + ringkasan toko (total net sales, basket size, UPT, target toko), tahun berjalan'},
+ target_bulanan:{label:'Target Bulanan',range:"'Target Bulanan'!A1:G400",mode:'last',n:40,desc:'target sales gross, Endless Aisle & voucher per bulan untuk TOKO dan tiap RA'},
+ traffic_harian:{label:'Traffic Harian',range:"'Traffic Harian'!A1:H500",mode:'last',n:31,desc:'jumlah pengunjung per slot jam per hari (31 hari terakhir)'},
+ produk_terlaris:{label:'Analisis Produk',range:"'Analisis Produk'!A1:I80",mode:'all',desc:'peringkat produk terlaris tahun berjalan: qty, transaksi, net/gross sales, diskon'},
+ barang_masuk:{label:'Barang Masuk',range:"'Barang Masuk'!A1:K6000",mode:'search_or_last',n:40,desc:'riwayat barang masuk/STO inbound per SKU (isi "cari" untuk SKU/nama tertentu)'},
+ stok_pusat:{label:'Stok Pusat',range:"'Stok Pusat'!A1:P6000",mode:'search',n:30,desc:'ketersediaan stok gudang pusat per artikel & harga (WAJIB isi "cari": nama/kode artikel)'},
+ new_arrival:{label:'SH Kit New Arrival',range:"'SH Kit New Arrival'!A1:Z2000",mode:'search_or_last',n:40,desc:'daftar artikel new arrival'},
+ promo:{label:'SH Kit Promo',range:"'SH Kit Promo'!A1:Z6300",mode:'search',n:30,desc:'artikel promo/diskon (WAJIB isi "cari": nama artikel/kategori/nama promo)'},
+ permintaan_barang:{label:'Permintaan Barang',range:"'Permintaan Barang'!A1:Z1000",mode:'last',n:40,desc:'permintaan barang terbaru'},
+ jadwal_blind_counting:{label:'Jadwal Blind Counting',range:"'Jadwal Blind Counting'!A1:Z1000",mode:'last',n:40,desc:'jadwal & status blind counting (SH Kit)'},
+ mutasi_harian:{label:'Mutasi Harian',range:"'Mutasi Harian'!A1:Z1000",mode:'last',n:40,desc:'mutasi barang harian'},
+ pica:{label:'PICA',range:"'PICA'!A1:Z1000",mode:'last',n:30,desc:'Problem Identification & Corrective Action'},
+ tinggalan:{label:'Tinggalan',range:"'Tinggalan'!A1:Z999",mode:'last',n:30,desc:'barang tinggalan pelanggan'},
+ rapor_ra:{label:'Rapor RA',range:"'Rapor RA'!A1:Z1000",mode:'last',n:30,desc:'rapor/penilaian Retail Assistant'},
+ sh_kit_masukan:{label:'SH Kit Masukan',range:"'SH Kit Masukan'!A1:Z1000",mode:'last',n:30,desc:'masukan tim lewat SH Kit'},
+ sh_kit_aktivitas:{label:'SH Kit Aktivitas',range:"'SH Kit Aktivitas'!A1:Z1000",mode:'last',n:30,desc:'log aktivitas pengguna SH Kit'}
+};
+const OFA_FOR={lucky:Object.keys(OFA_SETS),sales:['dashboard_ra','target_bulanan','traffic_harian','produk_terlaris','promo'],ops:['barang_masuk','stok_pusat','mutasi_harian','new_arrival','permintaan_barang','jadwal_blind_counting'],team:['rapor_ra','dashboard_ra','target_bulanan','jadwal_blind_counting','sh_kit_aktivitas'],kreatif:['promo','new_arrival','produk_terlaris'],laporan:Object.keys(OFA_SETS),sistem:['jadwal_blind_counting','permintaan_barang','pica','tinggalan','sh_kit_masukan','sh_kit_aktivitas','new_arrival','promo','barang_masuk']};
+const PII=/phone|e-?mail|customer name|nama pelanggan|telepon|no\.?\s*hp|whats ?app|\bwa\b|alamat/i;
+let ofaId='',ofaRef=null;const ofaCache={};
+const ofaReady=()=>!!(mcp&&ofaId);
+function ofaChip(){ofaReady()?chip('#cOfa','ok','Data OFA Hub tersambung'):chip('#cOfa',mcp?'warn':'',mcp?'Data OFA Hub belum diatur':'Data OFA Hub (versi Claude)')}
+function parseSheetId(v){const m=String(v||'').match(/\/d\/([a-zA-Z0-9_-]{20,})/);return m?m[1]:(/^[a-zA-Z0-9_-]{20,}$/.test(String(v||'').trim())?String(v).trim():'')}
+async function ofaValues(range){
+  const c=ofaCache[range];if(c&&Date.now()-c.at<5*60e3)return c.v;
+  const r=await mcp.callTool('Google Sheets','get_values',{spreadsheetId:ofaId,range});
+  const p=(r&&r.payload)||{};const v=p.values||(p.content&&p.content.values)||[];
+  ofaCache[range]={at:Date.now(),v};return v;
+}
+async function readOfa(key,cari){
+  const d=OFA_SETS[key];if(!d)throw new Error('Dataset tidak dikenal. Pilih: '+Object.keys(OFA_SETS).join(', '));
+  if(d.mode==='search'&&!String(cari||'').trim())throw new Error('Dataset '+key+' wajib memakai parameter "cari".');
+  const vals=await ofaValues(d.range);
+  const hi=vals.findIndex(r=>r.filter(x=>String(x).trim()).length>=3);
+  if(hi<0)return{sumber:'OFA Hub · '+d.label,catatan:'Tab ini masih kosong.',kolom:[],baris:[]};
+  const head=vals[hi].map(x=>String(x).trim());
+  const keep=head.map((h,i)=>h&&!PII.test(h)?i:-1).filter(i=>i>=0);
+  let rows=vals.slice(hi+1).filter(r=>r.some(x=>String(x).trim()));
+  const pre=vals.slice(0,hi).map(r=>r.filter(Boolean).join(' ')).filter(Boolean).join(' · ');
+  const words=String(cari||'').toLowerCase().split(/\s+/).filter(Boolean);
+  if(d.mode==='search'&&!words.length)throw new Error('Dataset '+key+' wajib memakai parameter "cari".');
+  let total=rows.length,note='';
+  if(words.length&&d.mode!=='all'&&d.mode!=='last'){rows=rows.filter(r=>{const t=keep.map(i=>r[i]||'').join(' ').toLowerCase();return words.every(w=>t.includes(w))});note=`${rows.length} baris cocok dengan "${cari}" dari ${total}.`;rows=rows.slice(0,d.n||30)}
+  else if(d.mode==='all')rows=rows.slice(0,60);
+  else{note=`Menampilkan ${Math.min(d.n,rows.length)} baris terakhir dari ${total}.`;rows=rows.slice(-d.n)}
+  const cut=x=>{x=String(x??'');return x.length>70?x.slice(0,67)+'…':x};
+  return{sumber:'OFA Hub · '+d.label+' (toko 7014)',keterangan:pre||undefined,catatan:note||undefined,kolom:keep.map(i=>head[i]),baris:rows.map(r=>keep.map(i=>cut(r[i])))};
+}
+function ofaTool(id,used){
+  const keys=Object.keys(OFA_SETS);
+  return{name:'baca_data_ofa',
+    description:'Membaca data asli toko EIGER 7014 Solo Baru dari OFA Hub (Google Sheets). Dataset: '+keys.map(k=>k+' = '+OFA_SETS[k].desc).join('; ')+'. Data pelanggan tidak tersedia.',
+    inputSchema:{type:'object',properties:{dataset:{type:'string',enum:keys,description:'nama dataset'},cari:{type:'string',description:'kata kunci penyaring (SKU, nama artikel, nama RA, tanggal). Wajib untuk stok_pusat dan promo.'}},required:['dataset']},
+    execute:async({dataset,cari})=>{
+      const w=WK[id];const lab=(OFA_SETS[dataset]||{}).label||dataset;
+      if(w){w.mood=`Membaca data OFA: ${lab}…`;updateOffice()}
+      try{const out=await readOfa(dataset,cari);used.add(lab);return out}
+      finally{if(w){w.mood='';updateOffice()}}
+    }};
+}
 function workPrompt(t){const m=BY[t.div]||BY.lucky;return `Kamu adalah ${m.name}, karyawan AI bagian ${m.role} di Lucky Corporation — tim AI pribadi seorang Store Head toko ritel perlengkapan outdoor Eiger. Pekerjaan toko sangat dinamis, jadi hasilmu harus cepat dipakai.
 Fokusmu: ${m.focus}.
 
@@ -599,7 +668,9 @@ Aturan menulis:
 - Gunakan poin, langkah bernomor, atau tabel markdown sederhana bila membantu.
 - Jangan mengarang angka, nama orang, atau data toko. Jika butuh data yang tidak diberikan, beri tempat isian seperti [isi: target harian] dan daftar datanya di bagian "## Data yang dibutuhkan".
 - Tutup dengan "## Langkah berikutnya" berisi 1–3 aksi singkat.
-- Maksimal sekitar 350 kata.`}
+- Maksimal sekitar 350 kata.${ofaReady()?`
+
+Akses data: kamu punya alat baca_data_ofa untuk membaca data ASLI toko dari OFA Hub. Pakai alat itu setiap kali tugas menyangkut angka atau data toko (sales, target, traffic, RA, produk, stok, barang masuk, promo, new arrival, blind counting, PICA, tinggalan, SH Kit). Dataset yang paling relevan untukmu: ${(OFA_FOR[m.id]||[]).join(', ')}. Hitung dari angka yang kamu baca; jangan mengarang. Tambahkan bagian "## Sumber data" berisi dataset dan periode yang dipakai.`:''}`}
 function dispatch(id,div){transit.add(id);render();deliver(div,()=>{transit.delete(id);pump()})}
 async function route(id){
   const t=tasks.find(x=>x.id===id);if(!t)return;
@@ -622,9 +693,13 @@ async function work(id){
   if(WK[t.div]&&WK[t.div].trip)await WK[t.div].trip.catch(()=>{});
   updateOffice();
   try{
-    const r=await sample(workPrompt(t),{modelTier:'default',cache:false,onText:({text})=>{live[id]=text;liveUpdate(id)}});
+    const used=new Set();
+    const opts={modelTier:'default',cache:false,onText:({text})=>{live[id]=text;liveUpdate(id)}};
+    if(ofaReady())opts.tools=[ofaTool(t.div,used)];
+    const r=await sample(workPrompt(t),opts);
+    t.sumber=[...used];
     flash[t.div]=Date.now();setTimeout(updateOffice,2700);
-    patch(id,{status:'cek',hasil:r.text,done:Date.now()});
+    patch(id,{status:'cek',hasil:r.text,done:Date.now(),sumber:[...used]});
   }catch(e){
     const code=e&&e.code;
     if(code==='not_granted'){sample=null;aiChip();patch(id,{status:'antrian'})}
@@ -679,7 +754,7 @@ function openSheet(id,refresh){
   <div class="card" style="border:0;padding:0;margin:0"><span class="who2">${m?`<i style="background:${m.color}"></i>${esc(m.name)} · ${esc(m.role)}`:'Belum dibagi'} · ${esc({antrian:'Antrian',proses:'Dikerjakan',cek:'Siap dicek',selesai:'Selesai'}[st])}</span></div>
   <h2 id="shTitle" style="margin-top:6px">${esc(t.judul||'Tugas')}</h2>
   <div class="q">${esc(t.text)}</div>${t.err?`<p class="err">${esc(t.err)}</p>`:''}
-  <div class="res" id="resBody">${body}</div>
+  <div class="res" id="resBody">${body}</div>${t.sumber&&t.sumber.length?`<div class="src">Data asli yang dibaca: ${esc(t.sumber.join(', '))}</div>`:''}
   <div class="acts">
     ${t.hasil?'<button class="btn" type="button" data-act="copy">Salin hasil</button>':''}
     ${t.hasil&&mcp?`<button class="btn" type="button" data-act="drive">${t.drive?'Simpan ulang ke Drive':'Simpan ke Google Drive'}</button>`:''}
@@ -736,6 +811,16 @@ $('#profSave').addEventListener('click',async()=>{
   try{await profRef.set({text:profile,updated:Date.now()});$('#profNote').textContent='Profil tersimpan.'}catch{$('#profNote').textContent='Gagal menyimpan profil.'}
 });
 $('#prof').addEventListener('input',()=>{profile=$('#prof').value});
+$('#ofaSave').addEventListener('click',async()=>{
+  const id=parseSheetId($('#ofaId').value),n=$('#ofaNote');
+  if(!id){n.textContent='Link atau ID spreadsheet tidak dikenali.';return}
+  if(!mcp){n.textContent='Data OFA hanya bisa dibaca di versi Claude (koneksi Google Sheets).';return}
+  n.textContent='Mengecek akses…';
+  const old=ofaId;ofaId=id;
+  try{await ofaValues("'Target Bulanan'!A1:A2");if(ofaRef)await ofaRef.set({spreadsheetId:id,updated:Date.now()});n.textContent='Tersambung. Karyawan sekarang membaca data asli OFA Hub.';}
+  catch(e){ofaId=old;n.textContent='Gagal membaca spreadsheet: '+((e&&e.message)||'periksa koneksi Google Sheets');}
+  ofaChip();
+});
 
 function clock(){stats()}
 function aiChip(){
@@ -752,7 +837,7 @@ $('#presets').innerHTML=PRESETS.map(p=>`<button type="button">${esc(p)}</button>
 render();setInterval(clock,30000);setInterval(ambient,7000);
 loadThree().then(()=>{init3D();has3D=true;$('#loading').remove()}).catch(err=>{$('#loading').remove();$('#gl').style.display='none';$('#labels').style.display='none';$('#fb').classList.add('on');console.warn('3D tidak tersedia',err)});
 cap('sample').then(s=>{sample=s;aiChip()});
-cap('mcp').then(m=>{mcp=m;m?chip('#cDrive','ok','Google Drive siap'):chip('#cDrive','','Google Drive belum terhubung')});
+cap('mcp').then(m=>{mcp=m;m?chip('#cDrive','ok','Google Drive siap'):chip('#cDrive','','Google Drive belum terhubung');ofaChip()});
 cap('db').then(db=>{
   if(!db){
     localMode=true;
@@ -770,6 +855,8 @@ cap('db').then(db=>{
     tasks.sort((a,b)=>b.created-a.created);render();
   },()=>{clearTimeout(tm);chip('#cDb','warn','Penyimpanan terputus')});
   profRef.get().then(s=>{if(s.exists){profile=String(s.data().text||'');$('#prof').value=profile}}).catch(()=>{});
+  ofaRef=db.doc('settings/ofa');
+  ofaRef.get().then(s=>{if(s.exists){ofaId=String(s.data().spreadsheetId||'');$('#ofaId').value=ofaId?'https://docs.google.com/spreadsheets/d/'+ofaId:''}ofaChip()}).catch(()=>ofaChip());
 });
 }
 </script>
