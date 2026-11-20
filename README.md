@@ -19,6 +19,14 @@ Kantor 3D WebGL (Three.js) bergaya kantor kartun yang sibuk, dengan dinding bata
 - Papan tugas: Antrian → Dikerjakan → Siap dicek → Selesai.
 - Profil toko yang dibaca semua karyawan sebelum bekerja.
 
+## Divisi
+
+**Operasional Toko** (manusia kartun kantoran): Lucky (CEO Assistant), Raka, Sinta, Dimas, Nala, Bima, Tari.
+
+**Lukky Studio** (Lucky Sprouts, ruang kedua di sebelah kanan): Pip (Produk & Template), Mochi (Konten Instagram), Kiko (Order & Admin DM), Tumi (Jasa Custom & Dashboard), Bobo (Keuangan Studio). Mereka membaca Profil Lukky Studio dan catatan penjualan (identitas pembeli disembunyikan). Profil dan ID spreadsheet disimpan di pengaturan akun Claude, tidak di kode ini.
+
+Tombol di kiri atas kantor memindahkan kamera: Operasional Toko · Lukky Studio · Semua.
+
 ## Data OFA Hub
 
 Di versi Claude, karyawan bisa membaca data asli toko dari spreadsheet OFA Hub (DSR/Dashboard RA, target bulanan, traffic, produk terlaris, stok pusat, barang masuk, promo, new arrival, blind counting, PICA, tinggalan, SH Kit) lewat koneksi Google Sheets pemilik. Kolom data pelanggan (telepon, email, nama) dibuang sebelum data dibaca AI. ID spreadsheet disimpan di pengaturan akun Claude, tidak di kode ini.

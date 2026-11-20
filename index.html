@@ -62,6 +62,14 @@ button{cursor:pointer}
 .cam{position:absolute;right:12px;top:12px;display:flex;gap:6px;z-index:5;flex-wrap:wrap;justify-content:flex-end}
 .cam button{background:rgba(255,255,255,.92);color:#141a33;border:0;border-radius:12px;min-width:44px;min-height:44px;padding:0 12px;font-weight:700;box-shadow:0 4px 12px -6px rgba(0,0,0,.4)}
 .cam button[aria-pressed=true]{background:#141a33;color:#fff}
+.rooms{position:absolute;left:12px;top:12px;z-index:5;display:flex;gap:4px;background:rgba(255,255,255,.92);padding:4px;border-radius:14px;box-shadow:0 4px 12px -6px rgba(0,0,0,.4);flex-wrap:wrap;max-width:calc(100% - 24px)}
+.rooms button{border:0;background:none;color:#141a33;border-radius:10px;min-height:40px;padding:0 12px;font-weight:700;font-size:14px}
+.rooms button[aria-pressed=true]{background:#1B2A4A;color:#fff}
+.rooms button[data-room=studio][aria-pressed=true]{background:#F26B4F}
+.seg{display:flex;gap:4px;flex-wrap:wrap;background:var(--surf);padding:4px;border-radius:12px}
+.seg button{border:0;background:none;border-radius:9px;min-height:36px;padding:0 12px;font-weight:700;font-size:14px;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--bg);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+@media (max-width:760px){.cam{top:auto;bottom:12px}.rooms button{padding:0 9px;font-size:13px}}
 .hint{position:absolute;left:14px;bottom:12px;z-index:5;font-size:13px;font-weight:600;color:light-dark(#3b4270,#c3c8ea);background:light-dark(rgba(255,255,255,.75),rgba(0,0,0,.35));padding:4px 10px;border-radius:99px}
 .fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;font-weight:600;color:var(--muted)}
 .fallback.on{display:flex}
@@ -143,11 +151,17 @@ button{cursor:pointer}
       <button type="button" id="camTour" aria-pressed="true">Tur</button>
       <button type="button" id="camReset">Reset</button>
     </div>
+    <div class="rooms" role="group" aria-label="Pilih ruangan">
+      <button type="button" data-room="toko" aria-pressed="true">Operasional Toko</button>
+      <button type="button" data-room="studio" aria-pressed="false">Lukky Studio</button>
+      <button type="button" data-room="all" aria-pressed="false">Semua</button>
+    </div>
     <div class="hint">Geser untuk memutar · scroll / cubit untuk zoom · ketuk pegawai</div>
   </div>
 
   <div class="bhead">
     <h2>Papan tugas</h2>
+    <div class="seg" id="deptSeg" role="group" aria-label="Filter divisi"><button type="button" data-d="" aria-pressed="true">Semua</button><button type="button" data-d="toko" aria-pressed="false">Operasional Toko</button><button type="button" data-d="studio" aria-pressed="false">Lukky Studio</button></div>
     <p id="filterTxt">Ketuk karyawan di kantor untuk melihat tugasnya saja.</p>
   </div>
   <div class="board" id="board"></div>
@@ -159,6 +173,11 @@ button{cursor:pointer}
     <div class="ofa-set"><label for="ofaId"><b>Spreadsheet OFA Hub</b> — tempel link atau ID Google Sheets yang dipakai OFA Hub</label>
     <div class="ofa-row"><input id="ofaId" type="text" inputmode="url" placeholder="https://docs.google.com/spreadsheets/d/…" autocomplete="off"><button class="btn pri" id="ofaSave" type="button">Sambungkan</button></div>
     <span class="note" id="ofaNote"></span></div>
+    <div class="ofa-set"><label for="stProf"><b>Profil Lukky Studio</b> — produk, harga, lisensi, alur order, gaya brand. Dibaca para Lucky Sprouts.</label>
+    <textarea id="stProf" placeholder="Produk, harga per lisensi, price list jasa, alur order, kanal jual, gaya bahasa brand…"></textarea>
+    <label for="stSheet" style="margin-top:6px"><b>Spreadsheet catatan penjualan Lukky Studio</b> (link atau ID)</label>
+    <div class="ofa-row"><input id="stSheet" type="text" inputmode="url" placeholder="https://docs.google.com/spreadsheets/d/…" autocomplete="off"><button class="btn pri" id="stSave" type="button">Simpan Studio</button></div>
+    <span class="note" id="stNote"></span></div>
   </details>
 </div>
 
@@ -188,12 +207,29 @@ const TEAM=[
   kw:['laporan','report','rekap','notulen','email','surat','dokumen','drive','spreadsheet','arsip','memo']},
  {id:'sistem',name:'Tari',role:'OFA Hub & SH Kit',color:'#0f9fb5',skin:'#eebf95',hairC:'#2b1a12',hair:'long',glasses:false,
   focus:'pekerjaan di OFA Hub dan SH Kit (Store Head Kit): membaca dan merangkum datanya, follow-up blind counting, permintaan barang, PICA, barang tinggalan, masukan & aktivitas tim di SH Kit, checklist langkah input',
-  kw:['ofa','sh kit','shkit','hub','sistem','aplikasi','input','order','online']}
+  kw:['ofa','sh kit','shkit','hub','sistem','aplikasi','input','order','online']},
+ {id:'pip',name:'Pip',role:'Produk & Template',dept:'studio',kind:'sprout',color:'#F26B4F',scarf:'#1B2A4A',
+  focus:'merancang dan mengembangkan produk digital Lukky Studio: ide template baru, fitur, struktur tab, rumus Google Sheets/Excel, versi produk, bundling, QA template sebelum dijual',
+  kw:['template baru','rumus','fitur template','produk baru','excel','formula','bundling','versi template','google sheets']},
+ {id:'mochi',name:'Mochi',role:'Konten Instagram',dept:'studio',kind:'sprout',color:'#9b5de5',scarf:'#F26B4F',
+  focus:'konten Instagram Lukky Studio: ide dan kalender konten, naskah carousel, caption, hashtag, story, reels, tips rumus, menjaga gaya brand yang ramah dan jelas',
+  kw:['konten lukky','carousel','kalender konten','reels','postingan lukky','lukky studio ig','tips rumus','highlight']},
+ {id:'kiko',name:'Kiko',role:'Order & Admin DM',dept:'studio',kind:'sprout',color:'#2f9be0',scarf:'#ffffff',
+  focus:'melayani pembeli Lukky Studio: balasan DM/WhatsApp, penjelasan produk dan lisensi, alur order, pesan pengiriman file, follow-up dan permintaan testimoni, FAQ, menangani komplain',
+  kw:['dm','whatsapp','pembeli','calon pembeli','balas','testimoni','follow-up','lisensi','faq','pengiriman file']},
+ {id:'tumi',name:'Tumi',role:'Jasa Custom & Dashboard',dept:'studio',kind:'sprout',color:'#14b8a6',scarf:'#F26B4F',
+  focus:'jasa custom Lukky Studio: brief dan pertanyaan ke klien, estimasi harga dari price list, penawaran/proposal, rencana dashboard Google Sheets/Looker Studio, desain katalog produk, timeline pengerjaan',
+  kw:['custom','dashboard usaha','looker','katalog produk','penawaran','proposal','klien','brief','jasa']},
+ {id:'bobo',name:'Bobo',role:'Keuangan Studio',dept:'studio',kind:'sprout',color:'#33446A',scarf:'#F26B4F',
+  focus:'keuangan Lukky Studio: rekap penjualan dan pendapatan dari catatan penjualan, status bayar/kirim/follow-up, evaluasi harga setelah 20 penjualan, target bulanan, biaya dan laba',
+  kw:['pendapatan','rekap penjualan studio','laba','omzet studio','evaluasi harga','keuangan studio','target studio','harga jual']}
 ];
+for(const m of TEAM){m.dept=m.dept||'toko';m.kind=m.kind||'human'}
 const BY=Object.fromEntries(TEAM.map(m=>[m.id,m]));
-const POS={lucky:{x:0,z:-3.6,big:1},ops:{x:-5.6,z:-3.4},sales:{x:5.6,z:-3.4},team:{x:-6.2,z:2.4},kreatif:{x:-2.1,z:2.8},laporan:{x:2.1,z:2.8},sistem:{x:6.2,z:2.4}};
+const SX=15.6;
+const POS={pip:{x:12.6,z:-3.4},mochi:{x:18.6,z:-3.4},kiko:{x:12.4,z:2.6},tumi:{x:15.6,z:3.0},bobo:{x:18.8,z:2.6},lucky:{x:0,z:-3.6,big:1},ops:{x:-5.6,z:-3.4},sales:{x:5.6,z:-3.4},team:{x:-6.2,z:2.4},kreatif:{x:-2.1,z:2.8},laporan:{x:2.1,z:2.8},sistem:{x:6.2,z:2.4}};
 const AISLE=-0.4,SPEED=1.7;
-const PRESETS=['Briefing pagi tim, fokus kejar target weekend','Checklist opening & closing toko','Caption promo akhir pekan untuk Instagram','Jadwal shift minggu depan untuk 6 crew','Rencana kerja saya hari ini','Rekap laporan mingguan toko'];
+const PRESETS=['Ide 5 konten Instagram Lukky Studio minggu depan','Balasan DM untuk calon pembeli Template Lamaran','Briefing pagi tim, fokus kejar target weekend','Checklist opening & closing toko','Caption promo akhir pekan untuk Instagram','Jadwal shift minggu depan untuk 6 crew','Rencana kerja saya hari ini','Rekap laporan mingguan toko'];
 const COLS=[['antrian','Antrian'],['proses','Dikerjakan'],['cek','Siap dicek'],['selesai','Selesai']];
 const IDLE={lucky:'Siap terima perintah',ops:'Cek display…',sales:'Pantau target',team:'Siap briefing',kreatif:'Cari ide konten',laporan:'Rapikan arsip',sistem:'Siaga sistem'};
 const MAXRUN=3;
@@ -207,8 +243,9 @@ let tasks=[],sample=null,mcp=null,col=null,profRef=null,profile='',runEnabled=fa
 const live={},running=new Set(),routing=new Set(),transit=new Set(),flash={},chains={},WK={};
 let moved=false;
 
-const spot=id=>{const p=POS[id];return{x:p.x,z:p.z-(p.big?0.95:0.85)}};
-const sidePt=id=>{const p=POS[id],hw=p.big?2.0:1.6;return{x:p.x+(p.x<=0?-hw:hw),z:spot(id).z}};
+const cxOf=id=>BY[id]&&BY[id].dept==='studio'?SX:0;
+const spot=id=>{const p=POS[id],sp=BY[id]&&BY[id].kind==='sprout';return{x:p.x,z:p.z-(p.big?0.95:sp?0.72:0.85)}};
+const sidePt=id=>{const p=POS[id],sp=BY[id]&&BY[id].kind==='sprout',hw=p.big?2.0:sp?1.3:1.6;return{x:p.x+(p.x<=cxOf(id)?-hw:hw),z:spot(id).z}};
 
 /* worker state (shared by 3D view and task logic) */
 for(const m of TEAM){const s=spot(m.id);WK[m.id]={x:s.x,z:s.z,face:0,queue:[],resolve:null,trip:null,mood:'',flags:new Set(),state:'idle',seed:Math.random()*10,doneAt:0}}
@@ -243,7 +280,7 @@ function trip(id,dest,wait,mood,opt={},onArrive){
 }
 function deliver(div,onArrive){
   if(div==='lucky'){onArrive&&onArrive();return Promise.resolve()}
-  const s=sidePt(div);const dest={x:s.x+(s.x<0?-0.45:0.45),z:s.z+0.2};
+  const s=sidePt(div);const dest={x:s.x+(s.x<cxOf(div)?-0.45:0.45),z:s.z+0.2};
   return trip('lucky',dest,700,`Antar tugas ke ${BY[div].name}…`,{hold:'carry',drop:'carry',ret:'Kembali ke meja…'},onArrive);
 }
 function ambient(){
@@ -251,9 +288,9 @@ function ambient(){
   const idle=TEAM.filter(m=>m.id!=='lucky'&&!WK[m.id].trip&&!tasks.some(t=>t.div===m.id&&['antrian','proses'].includes(eff(t))));
   if(!idle.length||Math.random()<.35)return;
   const m=idle[Math.floor(Math.random()*idle.length)];
-  const coffee=Math.random()<.6;
-  const dest=coffee?{x:-7.55+Math.random()*.35,z:-1.25+Math.random()*.3}:{x:-1+Math.random()*2,z:AISLE+(Math.random()-.5)};
-  trip(m.id,dest,coffee?2600:2000,coffee?'Ambil kopi sebentar…':'Diskusi kecil…',coffee?{at:'coffee',keep:true}:{});
+  const coffee=Math.random()<.6,st=m.dept==='studio';
+  const dest=st?(coffee?{x:SX-1.1+Math.random()*2.2,z:-1.75+Math.random()*.2}:{x:SX-1+Math.random()*2,z:AISLE+(Math.random()-.5)*.6}):(coffee?{x:-7.55+Math.random()*.35,z:-1.25+Math.random()*.3}:{x:-1+Math.random()*2,z:AISLE+(Math.random()-.5)});
+  trip(m.id,dest,coffee?2600:2000,st?(coffee?'Ngemil di beanbag…':'Brainstorm sebentar…'):(coffee?'Ambil kopi sebentar…':'Diskusi kecil…'),coffee?{at:'coffee',keep:true}:{});
 }
 function updateOffice(){
   const now=Date.now();
@@ -303,9 +340,9 @@ function init3D(){
   /* lights */
   const hemi=new T.HemisphereLight(0xffffff,0xb8ad9e,0.72);scene.add(hemi);
   scene.add(new T.AmbientLight(0xffffff,0.16));
-  const sun=new T.DirectionalLight(0xfff1dc,0.95);sun.position.set(7,13,9);sun.castShadow=true;
+  const sun=new T.DirectionalLight(0xfff1dc,0.95);sun.position.set(14,14,10);sun.castShadow=true;sun.target.position.set(6.3,0,0);scene.add(sun.target);
   sun.shadow.mapSize.set(2048,2048);
-  Object.assign(sun.shadow.camera,{left:-13,right:13,top:11,bottom:-11,near:1,far:40});sun.shadow.camera.updateProjectionMatrix();
+  Object.assign(sun.shadow.camera,{left:-18,right:18,top:13,bottom:-13,near:1,far:50});sun.shadow.camera.updateProjectionMatrix();
   sun.shadow.bias=-0.0006;scene.add(sun);
 
   /* helpers */
@@ -367,6 +404,7 @@ function init3D(){
   /* desks */
   const screens={};
   for(const m of TEAM){
+    if(m.kind==='sprout')continue;
     const p=POS[m.id],w=p.big?3.0:2.2,d=p.big?1.3:1.1,H=.78,top=p.big?'#a8774a':'#dfe1e6',side=p.big?'#8c5f37':'#cbced6';
     add(scene,BOX(w,.06,d),mat(top,{roughness:.55}),p.x,H-.03,p.z);
     add(scene,BOX(.5,H-.06,d-.1),mat(side,{roughness:.6}),p.x+w/2-.3,(H-.06)/2,p.z);
@@ -385,6 +423,51 @@ function init3D(){
     add(scene,new T.CylinderGeometry(.048,.042,.11,14),mat(m.color),p.x+.25,H+.055,p.z+.2);
     stack(p.x+(p.big?.85:.5),p.z,4+Math.floor(Math.random()*7),H);
     if(p.big){add(scene,BOX(.3,.02,.22),mat('#f3d27a'),p.x+.35,H+.01,p.z+.25);add(scene,new T.CylinderGeometry(.2,.2,.02,24),mat('#141a33'),p.x-1.15,H+.01,p.z+.2)}
+  }
+
+  /* ===== Lukky Studio room ===== */
+  const NAVY='#1B2A4A',CORAL='#F26B4F',CELL='#E3E7EF';
+  const sFloorTex=tex(512,512,(g,w,h)=>{g.fillStyle='#f1efe9';g.fillRect(0,0,w,h);g.strokeStyle='rgba(27,42,74,.10)';g.lineWidth=3;for(let i=0;i<=8;i++){g.beginPath();g.moveTo(i*64,0);g.lineTo(i*64,h);g.stroke()}});
+  sFloorTex.wrapS=sFloorTex.wrapT=T.RepeatWrapping;sFloorTex.repeat.set(3,3.25);
+  const sf=add(scene,new T.PlaneGeometry(12,13),new T.MeshStandardMaterial({map:sFloorTex,roughness:.85}),SX,.001,0,false);sf.rotation.x=-Math.PI/2;
+  add(scene,new T.PlaneGeometry(12,4.4),mat(CELL,{roughness:.9}),SX,2.2,-6.5,false);
+  add(scene,BOX(12,1.05,.05),mat(NAVY,{roughness:.7}),SX,.525,-6.47,false);
+  add(scene,BOX(12,.08,.06),mat(CORAL),SX,1.08,-6.46,false);
+  const lkTex=tex(1024,320,(g,w,h)=>{g.fillStyle='#ffffff';g.fillRect(0,0,w,h);const c=58,gap=8,x0=48,y0=62;for(let r=0;r<3;r++)for(let k=0;k<3;k++){const L=k===0||r===2,luck=r===0&&k===2;g.fillStyle=luck?CORAL:L?NAVY:CELL;g.fillRect(x0+k*(c+gap),y0+r*(c+gap),c,c)}g.fillStyle=NAVY;g.font='800 118px Sora, "Arial Black", Arial, sans-serif';g.fillText('LUKKY',290,170);g.font='600 46px Sora, Arial, sans-serif';const st='S T U D I O';g.fillText(st,296,246);g.fillStyle=CORAL;g.fillRect(296,270,120,8)});
+  add(scene,new T.PlaneGeometry(4.2,1.31),new T.MeshStandardMaterial({map:lkTex,roughness:.6}),SX-2.6,2.95,-6.44,false);
+  const tagTex=tex(768,256,(g,w,h)=>{g.fillStyle=NAVY;g.fillRect(0,0,w,h);g.fillStyle='#fff';g.font='700 62px Sora, Arial, sans-serif';g.fillText('template · dashboard',40,112);g.fillStyle=CORAL;g.fillText('· katalog',40,196)});
+  add(scene,new T.PlaneGeometry(2.4,.8),new T.MeshStandardMaterial({map:tagTex,roughness:.6}),SX+2.4,3.05,-6.44,false);
+  const sheetTex=tex(512,384,(g,w,h)=>{g.fillStyle='#fff';g.fillRect(0,0,w,h);g.strokeStyle='#c9d0de';g.lineWidth=2;for(let x=0;x<=w;x+=64){g.beginPath();g.moveTo(x,0);g.lineTo(x,h);g.stroke()}for(let y=0;y<=h;y+=32){g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke()}g.fillStyle=NAVY;g.fillRect(0,0,w,32);g.fillStyle=CORAL;g.fillRect(64,96,128,32);g.fillStyle='#16a37a';g.fillRect(256,160,192,32)});
+  add(scene,new T.PlaneGeometry(1.6,1.2),new T.MeshStandardMaterial({map:sheetTex}),SX+5.0,2.6,-6.44,false);
+  // glass partition with doorway on the aisle
+  const glassP=new T.MeshStandardMaterial({color:'#d8e6ff',transparent:true,opacity:.22,roughness:.1});
+  add(scene,BOX(.05,2.5,4.8),glassP,9.6,1.25,-4.1,false);add(scene,BOX(.05,2.5,5.6),glassP,9.6,1.25,3.7,false);
+  add(scene,BOX(.09,.09,13),mat(NAVY),9.6,2.5,0,false);
+  for(const z of [-6.45,-1.7,.9,6.45])add(scene,BOX(.09,2.5,.09),mat(NAVY),9.6,1.25,z);
+  add(scene,new T.CylinderGeometry(1.8,1.8,.012,48),mat(CORAL,{roughness:.95}),SX,.008,AISLE,false);
+  // beanbag lounge
+  for(const [x,z,c] of [[SX-.75,-2.45,CORAL],[SX+.7,-2.6,NAVY],[SX+1.6,-2.2,'#9b5de5']]){const b=add(scene,new T.SphereGeometry(.48,24,16),mat(c,{roughness:.9}),x,.27,z);b.scale.set(1,.58,1)}
+  add(scene,new T.CylinderGeometry(.35,.35,.32,24),mat('#ffffff',{roughness:.5}),SX,.16,-3.45);
+  add(scene,new T.CylinderGeometry(.06,.05,.1,12),mat(CORAL),SX-.1,.37,-3.45);add(scene,new T.CylinderGeometry(.06,.05,.1,12),mat(NAVY),SX+.12,.37,-3.38);
+  // shelf with binders
+  add(scene,BOX(1.6,1.8,.4),mat('#ffffff',{roughness:.6}),20.7,.9,-6.25);
+  for(let r=0;r<3;r++)for(let i=0;i<6;i++)add(scene,BOX(.18,.42,.3),mat([NAVY,CORAL,'#2f9be0','#14b8a6','#9b5de5',CELL][(i+r)%6]),20.15+i*.22,.3+r*.58,-6.2);
+  plant(21.1,6.0);plant(10.2,6.0);plant(21.15,-4.9);
+  // studio desks (lower, sprout height) with laptops
+  for(const m of TEAM){
+    if(m.kind!=='sprout')continue;
+    const p=POS[m.id],w=1.8,d=.9,H=.52;
+    add(scene,BOX(w,.05,d),mat('#ffffff',{roughness:.45}),p.x,H-.025,p.z);
+    for(const dx of [-1,1])for(const dz of [-1,1])add(scene,BOX(.05,H-.05,.05),mat(NAVY),p.x+dx*(w/2-.08),(H-.05)/2,p.z+dz*(d/2-.08));
+    add(scene,BOX(w-.2,.25,.025),mat(m.color,{roughness:.6}),p.x,.3,p.z+d/2-.06);
+    add(scene,BOX(.44,.02,.3),mat('#c9ccd6',{roughness:.35,metalness:.2}),p.x-.15,H+.01,p.z-.12);
+    const lid=add(scene,BOX(.44,.3,.015),mat('#c9ccd6',{roughness:.35,metalness:.2}),p.x-.15,H+.16,p.z+.04);lid.rotation.x=-.18;
+    const sm=new T.MeshStandardMaterial({color:'#1d2440',emissive:new T.Color('#24304f'),emissiveIntensity:.5,roughness:.3});
+    const scr=add(scene,new T.PlaneGeometry(.4,.26),sm,p.x-.15,H+.16,p.z+.03,false);scr.rotation.set(-.18,Math.PI,0);
+    screens[m.id]={mat:sm,color:new T.Color(m.color),idle:new T.Color('#24304f')};
+    add(scene,new T.CylinderGeometry(.045,.04,.1,14),mat(CORAL),p.x+.45,H+.05,p.z+.15);
+    add(scene,new T.CylinderGeometry(.07,.06,.1,12),mat('#ffffff'),p.x+.65,H+.05,p.z-.2);add(scene,new T.SphereGeometry(.09,12,10),mat('#3aa65b'),p.x+.65,H+.16,p.z-.2);
+    stack(p.x+.45,p.z-.2,2+Math.floor(Math.random()*3),H,.24,.3);
   }
 
   /* workers */
@@ -433,7 +516,34 @@ function init3D(){
     scene.add(root);
     return{root,body,head,eyes,legs,arms,paper,cup,ring};
   }
-  const R={};for(const m of TEAM)R[m.id]=worker(m);
+  function sprout(m){
+    const root=new T.Group(),body=new T.Group();root.add(body);
+    const c=new T.Color(m.color),dk=c.clone().multiplyScalar(.7),bm=new T.MeshStandardMaterial({color:c,roughness:.45}),dm=new T.MeshStandardMaterial({color:dk,roughness:.6});
+    const dark=mat('#1a1d2a',{roughness:.4}),white=mat('#ffffff',{roughness:.3}),leaf=mat('#46c06a',{roughness:.6}),stem=mat('#2f9a52');
+    const legs=[],arms=[];
+    for(const s of [-1,1]){const fp=new T.Group();fp.position.set(s*.14,.1,0);body.add(fp);const f=add(fp,new T.SphereGeometry(.11,14,10),dm,0,0,.04);f.scale.set(1,.55,1.35);legs.push(fp)}
+    const bd=add(body,new T.SphereGeometry(.42,28,22),bm,0,.5,0);bd.scale.set(1,.96,1);
+    add(body,new T.SphereGeometry(.16,14,10),new T.MeshStandardMaterial({color:'#ffffff',transparent:true,opacity:.28,roughness:.2}),-.16,.7,.26,false);
+    const sc=add(body,new T.TorusGeometry(.34,.06,10,30),mat(m.scarf||'#ffffff',{roughness:.7}),0,.33,0);sc.rotation.x=Math.PI/2;
+    const tail=add(body,BOX(.1,.2,.04),mat(m.scarf||'#ffffff',{roughness:.7}),.16,.22,.33);tail.rotation.z=-.3;
+    for(const s of [-1,1]){const ap=new T.Group();ap.position.set(s*.4,.55,0);ap.rotation.z=s*.25;body.add(ap);const a=add(ap,new T.SphereGeometry(.085,12,10),bm,0,-.11,0);a.scale.set(1,1.7,1);arms.push(ap)}
+    const paper=add(arms[1],BOX(.2,.26,.012),paperM,0,-.26,.1);paper.visible=false;
+    const cup=add(arms[1],new T.CylinderGeometry(.045,.04,.09,12),mat('#ffffff'),0,-.28,.06);cup.visible=false;
+    const head=new T.Group();head.position.set(0,.5,0);body.add(head);
+    const eyes=new T.Group();eyes.position.set(0,.12,.33);head.add(eyes);
+    for(const s of [-1,1]){const e=add(eyes,new T.SphereGeometry(.1,16,12),white,s*.14,0,0,false);e.scale.z=.55;add(eyes,new T.SphereGeometry(.056,12,10),dark,s*.14,-.01,.05,false);add(eyes,new T.SphereGeometry(.02,8,6),white,s*.14+.02,.02,.1,false)}
+    for(const s of [-1,1])add(head,new T.SphereGeometry(.05,10,8),new T.MeshStandardMaterial({color:'#ff8a8a',transparent:true,opacity:.55}),s*.25,-.02,.31,false);
+    const mouth=add(head,new T.TorusGeometry(.06,.013,8,16,Math.PI),dark,0,-.04,.39,false);mouth.rotation.z=Math.PI;
+    const sp=new T.Group();sp.position.set(0,.9,0);body.add(sp);
+    add(sp,new T.CylinderGeometry(.016,.022,.2,8),stem,0,.1,0);
+    for(let i=0;i<4;i++){const a=i*Math.PI/2,l=add(sp,new T.SphereGeometry(.07,12,8),leaf,Math.cos(a)*.07,.22,Math.sin(a)*.07);l.scale.set(1.25,.35,1.25)}
+    add(sp,new T.SphereGeometry(.03,8,6),stem,0,.23,0);
+    const ring=add(root,new T.RingGeometry(.42,.52,40),new T.MeshBasicMaterial({color:'#ff5a36',transparent:true,opacity:.9}),0,.015,0,false);ring.rotation.x=-Math.PI/2;ring.visible=false;
+    root.traverse(o=>{if(o.isMesh){o.userData.id=m.id;pickables.push(o)}});
+    scene.add(root);
+    return{kind:'sprout',root,body,head,eyes,legs,arms,paper,cup,ring,sp};
+  }
+  const R={};for(const m of TEAM)R[m.id]=m.kind==='sprout'?sprout(m):worker(m);
 
   /* flying paper */
   const papers=[];const pg=new T.PlaneGeometry(.26,.34);const pm=new T.MeshStandardMaterial({color:'#ffffff',side:T.DoubleSide,roughness:.9});
@@ -462,7 +572,7 @@ function init3D(){
   stage.addEventListener('pointerdown',e=>{if(e.target.closest('.cam'))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=false;drag={x:e.clientX,y:e.clientY,yaw:cam.yaw,pitch:cam.pitch,r:cam.r,dist:0};stage.classList.add('drag')});
   stage.addEventListener('pointermove',e=>{
     if(!drag||!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    if(pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(!drag.dist)drag.dist=d;cam.r=Math.min(28,Math.max(8,drag.r*drag.dist/d));moved=true;stopTour();return}
+    if(pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(!drag.dist)drag.dist=d;cam.anim=null;cam.r=Math.min(36,Math.max(7,drag.r*drag.dist/d));moved=true;stopTour();return}
     const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>5){moved=true;stopTour()}
     if(!moved)return;cam.yaw=drag.yaw-dx*.006;cam.pitch=Math.min(1.3,Math.max(.18,drag.pitch+dy*.004));
   });
@@ -476,9 +586,13 @@ function init3D(){
     pts.delete(e.pointerId);if(!pts.size){drag=null;stage.classList.remove('drag')}
   };
   stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',end);
-  stage.addEventListener('wheel',e=>{e.preventDefault();stopTour();cam.r=Math.min(28,Math.max(8,cam.r*(e.deltaY>0?1.08:.92)))},{passive:false});
+  stage.addEventListener('wheel',e=>{e.preventDefault();stopTour();cam.anim=null;cam.r=Math.min(36,Math.max(7,cam.r*(e.deltaY>0?1.08:.92)))},{passive:false});
   $('#camL').onclick=()=>{stopTour();cam.yaw-=.6};$('#camR').onclick=()=>{stopTour();cam.yaw+=.6};
-  $('#camReset').onclick=()=>{cam.yaw=.42;cam.pitch=.58;cam.r=17.5};
+  const ROOMS={toko:{x:0,z:-.6,r:17.5},studio:{x:SX,z:-.6,r:13.5},all:{x:7.8,z:-.4,r:28}};let room='toko';
+  function goRoom(k){room=k;cam.anim=Object.assign({},ROOMS[k]);document.querySelectorAll('.rooms button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.room===k))}
+  document.querySelectorAll('.rooms button').forEach(b=>b.onclick=()=>goRoom(b.dataset.room));
+  window.__goRoom=goRoom;
+  $('#camReset').onclick=()=>{cam.yaw=.42;cam.pitch=.58;goRoom(room)};
   $('#camTour').onclick=()=>{cam.tour=!cam.tour;cam.base=cam.yaw;cam.t0=performance.now()/1000;$('#camTour').setAttribute('aria-pressed',cam.tour)};
 
   /* sky by time of day */
@@ -496,6 +610,7 @@ function init3D(){
     requestAnimationFrame(frame);
     if(document.hidden)return;
     const t=nowMs/1000,dt=Math.min(.05,t-last);last=t;
+    if(cam.anim){const k=Math.min(1,dt*3);target.x+=(cam.anim.x-target.x)*k;target.z+=(cam.anim.z-target.z)*k;cam.r+=(cam.anim.r-cam.r)*k;if(Math.abs(cam.anim.x-target.x)<.02&&Math.abs(cam.anim.r-cam.r)<.05)cam.anim=null}
     if(cam.tour&&!drag)cam.yaw=cam.base+.32*Math.sin((t-cam.t0)/6);
     placeCam();
     paperTimer+=dt;
@@ -512,6 +627,26 @@ function init3D(){
       r.root.position.set(w.x,0,w.z);
       // pose
       const s=w.seed,st=w.state;
+      if(r.kind==='sprout'){
+        let y=0,sx=1,sy=1,aL=0,aR=0,fL=0,fR=0,hx=0,hz=0,spz=Math.sin(t*1.5+s)*.15;
+        if(walking){const k=t*10;y=Math.abs(Math.sin(k))*.12;const q=Math.cos(2*k);sx=1+q*.05;sy=1-q*.06;fL=Math.sin(k)*.55;fR=-fL;aL=Math.sin(k)*.6;aR=-aL;spz=Math.sin(k)*.35}
+        else if(st==='working'){aL=-1.0+Math.sin(t*18+s)*.22;aR=-1.0+Math.sin(t*18+s+1.6)*.22;hx=.1+Math.sin(t*3)*.04;r.sp.rotation.y+=dt*7}
+        else if(st==='thinking'){hz=Math.sin(t*2.2)*.2;aR=-1.8}
+        else if(st==='done'){const ph=(Date.now()-flash[m.id])/1000,a=Math.max(0,1-ph/2.6);y=Math.abs(Math.sin(ph*Math.PI*2.2))*.45*a;sy=1+Math.sin(ph*Math.PI*4.4)*.06*a;aL=aR=-2.6;r.sp.rotation.y+=dt*10}
+        else{sy=1+Math.sin(t*2+s)*.02;sx=1-Math.sin(t*2+s)*.01}
+        if(w.flags.has('carry')||w.flags.has('coffee'))aR=-1.1;
+        r.body.position.y=y;r.body.scale.set(sx,sy,sx);
+        r.legs[0].rotation.x=fL;r.legs[1].rotation.x=fR;r.arms[0].rotation.x=aL;r.arms[1].rotation.x=aR;
+        r.head.rotation.set(hx,0,hz);r.sp.rotation.z=spz;
+        r.eyes.scale.y=((t+s)%3.8)<.12?.12:1;
+        r.paper.visible=w.flags.has('carry');r.cup.visible=w.flags.has('coffee');r.ring.visible=filter===m.id;
+        const sc=screens[m.id];if(sc){if(w.screen){sc.mat.emissive.copy(sc.color);sc.mat.emissiveIntensity=.7+Math.sin(t*6)*.25}else{sc.mat.emissive.copy(sc.idle);sc.mat.emissiveIntensity=.5}}
+        if(st==='working'&&paperTimer>.9&&Math.random()<.2)spawnPaper(m.id,.5);
+        const el=lbls[m.id];
+        if(el){v.set(w.x,1.5+y,w.z).project(camera);
+          if(v.z>1){el.style.display='none'}else{el.style.display='';el.style.transform=`translate(${((v.x+1)/2*stage.clientWidth).toFixed(1)}px,${((1-v.y)/2*stage.clientHeight).toFixed(1)}px) translate(-50%,-100%)`}}
+        continue;
+      }
       let bodyY=0,armL=0,armR=0,legL=0,legR=0,headX=0,headY=Math.sin(t*.6+s)*.22,headZ=0,armZ=0;
       if(walking){const k=t*9;legL=Math.sin(k)*.6;legR=-legL;armL=-Math.sin(k)*.5;armR=-armL;bodyY=Math.abs(Math.sin(k))*.05;headY=0}
       else if(st==='working'){armL=-1.25+Math.sin(t*18+s)*.12;armR=-1.25+Math.sin(t*18+s+1.6)*.12;headX=.14+Math.sin(t*3)*.04;headY=Math.sin(t*1.3)*.08}
@@ -583,9 +718,9 @@ function patch(id,p){const t=tasks.find(x=>x.id===id);if(!t)return null;Object.a
 function remove(id){tasks=tasks.filter(t=>t.id!==id);if(col)col.doc(id).delete().catch(()=>{});persistLocal();render()}
 
 /* AI */
-function routePrompt(t){return `Kamu Lucky, koordinator tim AI milik seorang Store Head toko ritel outdoor. Pilih SATU divisi paling tepat untuk perintah di bawah.
-Divisi:
-${TEAM.map(m=>`- ${m.id}: ${m.role} — ${m.focus}`).join('\n')}
+function routePrompt(t){return `Kamu Lucky, koordinator tim AI Lucky Corporation milik Luki. Ada dua divisi: Operasional Toko (Luki sebagai Store Head toko Eiger) dan Lukky Studio (bisnis produk digital Luki: template Google Sheets/Excel, dashboard, katalog, dijual lewat Instagram & WhatsApp). Pilih SATU karyawan paling tepat untuk perintah di bawah. Perintah tentang Lukky Studio, template digital, pembeli template, atau konten akun Lukky Studio masuk ke karyawan Lukky Studio.
+Karyawan:
+${TEAM.map(m=>`- ${m.id}: ${m.role} [${m.dept==='studio'?'Lukky Studio':'Operasional Toko'}] — ${m.focus}`).join('\n')}
 
 Perintah: """${t.text}"""
 
@@ -611,16 +746,39 @@ const OFA_SETS={
  sh_kit_aktivitas:{label:'SH Kit Aktivitas',range:"'SH Kit Aktivitas'!A1:Z1000",mode:'last',n:30,desc:'log aktivitas pengguna SH Kit'}
 };
 const OFA_FOR={lucky:Object.keys(OFA_SETS),sales:['sales_bulan_ini','target_bulanan','traffic_harian','produk_terlaris','promo'],ops:['barang_masuk','stok_pusat','mutasi_harian','new_arrival','permintaan_barang','jadwal_blind_counting'],team:['rapor_ra','sales_bulan_ini','target_bulanan','jadwal_blind_counting','sh_kit_aktivitas'],kreatif:['promo','new_arrival','produk_terlaris'],laporan:Object.keys(OFA_SETS),sistem:['jadwal_blind_counting','permintaan_barang','pica','tinggalan','sh_kit_masukan','sh_kit_aktivitas','new_arrival','promo','barang_masuk']};
-const PII=/phone|e-?mail|customer name|nama pelanggan|telepon|no\.?\s*hp|whats ?app|\bwa\b|alamat/i;
+const PII=/phone|e-?mail|gmail|customer name|nama pelanggan|nama pembeli|telepon|no\.?\s*hp|whats ?app|\bwa\b|alamat|link file/i;
 let ofaId='',ofaRef=null;const ofaCache={};
 const ofaReady=()=>!!(mcp&&ofaId);
 function ofaChip(){ofaReady()?chip('#cOfa','ok','Data OFA Hub tersambung'):chip('#cOfa',mcp?'warn':'',mcp?'Data OFA Hub belum diatur':'Data OFA Hub (versi Claude)')}
 function parseSheetId(v){const m=String(v||'').match(/\/d\/([a-zA-Z0-9_-]{20,})/);return m?m[1]:(/^[a-zA-Z0-9_-]{20,}$/.test(String(v||'').trim())?String(v).trim():'')}
-async function ofaValues(range){
-  const c=ofaCache[range];if(c&&Date.now()-c.at<5*60e3)return c.v;
-  const r=await mcp.callTool('Google Sheets','get_values',{spreadsheetId:ofaId,range});
+async function sheetValues(id,range){
+  const key=id+'|'+range,c=ofaCache[key];if(c&&Date.now()-c.at<5*60e3)return c.v;
+  const r=await mcp.callTool('Google Sheets','get_values',{spreadsheetId:id,range});
   const p=(r&&r.payload)||{};const v=p.values||(p.content&&p.content.values)||[];
-  ofaCache[range]={at:Date.now(),v};return v;
+  ofaCache[key]={at:Date.now(),v};return v;
+}
+const ofaValues=range=>sheetValues(ofaId,range);
+/* ===== Lukky Studio settings & data ===== */
+let stProfile='',stSheet='',stRef=null;
+async function ensureStudio(){if(stRef&&!stProfile&&!stSheet){try{const s=await stRef.get();if(s.exists){const d=s.data();stProfile=String(d.text||'');stSheet=String(d.sheetId||'')}}catch(e){}}return!!(mcp&&stSheet)}
+async function studioContext(used){
+  const vals=await sheetValues(stSheet,'PENJUALAN!A1:O1000');
+  const hi=vals.findIndex(r=>r.filter(x=>String(x).trim()).length>=5);if(hi<0)return'';
+  const head=vals[hi].map(x=>String(x).trim()),keep=head.map((h,i)=>h&&!PII.test(h)?i:-1).filter(i=>i>=0);
+  const ix=n=>head.findIndex(h=>h.toLowerCase()===n);
+  const rows=vals.slice(hi+1).filter(r=>r.some((x,i)=>i>0&&String(x).trim()));
+  used.add('Catatan Penjualan Lukky Studio');
+  if(!rows.length)return'Belum ada pesanan yang tercatat di catatan penjualan (0 pesanan).';
+  const iP=ix('produk'),iH=ix('harga'),iB=ix('status bayar'),iK=ix('status kirim'),iF=ix('sudah follow-up'),iT=ix('dapat testimoni');
+  let lunas=0,rev=0,blmKirim=0,blmFu=0,testi=0;const per={};
+  for(const r of rows){const pb=String(r[iB]||'').toLowerCase(),isL=/lunas/.test(pb);if(isL){lunas++;rev+=toNum(r[iH])}
+    if(isL&&!/terkirim|sudah/i.test(String(r[iK]||'')))blmKirim++;
+    if(/terkirim|sudah/i.test(String(r[iK]||''))&&!/ya|sudah|✓|true/i.test(String(r[iF]||'')))blmFu++;
+    if(/ya|sudah|✓|true/i.test(String(r[iT]||'')))testi++;
+    const pr=String(r[iP]||'(tanpa produk)');per[pr]=(per[pr]||0)+1}
+  const sum=`Ringkasan: ${rows.length} pesanan tercatat, ${lunas} lunas, pendapatan lunas Rp ${rev.toLocaleString('id-ID')}, ${blmKirim} lunas belum dikirim, ${blmFu} terkirim belum follow-up, ${testi} sudah memberi testimoni. Per produk: ${Object.entries(per).map(([k,v])=>k+' '+v).join('; ')}.`;
+  const tbl=keep.map(i=>head[i]).join(' | ')+'\n'+rows.slice(-30).map(r=>keep.map(i=>String(r[i]??'').slice(0,60)).join(' | ')).join('\n');
+  return sum+'\n'+tbl;
 }
 const BLN_ID=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const normName=v=>String(v||'').replace(/\s+/g,' ').trim().toUpperCase();
@@ -716,7 +874,28 @@ async function ofaContext(div,used){
   }
   return{text:parts.join('\n\n'),errs};
 }
-function workPrompt(t,ctx=''){const m=BY[t.div]||BY.lucky;const today=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});return `Hari ini: ${today}.
+function studioPrompt(t,m,ctx){const today=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});return `Hari ini: ${today}.
+Kamu adalah ${m.name}, seorang Lucky Sprout: karyawan AI divisi Lukky Studio di Lucky Corporation, bagian ${m.role}. Lukky Studio adalah bisnis produk digital milik Luki (template Google Sheets/Excel, dashboard, katalog) yang dijual lewat Instagram dan WhatsApp.
+Fokusmu: ${m.focus}.
+
+Profil dan aturan bisnis Lukky Studio:
+${stProfile.trim()||'(belum diisi)'}
+${ctx?`
+DATA PENJUALAN LUKKY STUDIO (Google Sheets, identitas pembeli disembunyikan):
+${ctx}
+`:''}
+Tugas (prioritas ${t.prio}):
+${t.text}
+
+Aturan menulis:
+- Bahasa Indonesia. Untuk caption, DM, atau pesan ke pembeli pakai gaya brand yang ramah, jelas, dan tidak berlebihan; emoji secukupnya hanya di teks untuk pembeli/Instagram.
+- Baris pertama adalah judul yang diawali "# ".
+- Pakai harga, lisensi, fitur, dan alur dari profil di atas. Jangan mengarang harga, fitur, testimoni, atau angka penjualan. Jika data penjualan kosong, katakan apa adanya.
+- Jangan menyarankan membagikan file lewat link publik; file dibagikan ke Gmail pembeli dengan akses Dibatasi.
+- Jika butuh data yang tidak ada, beri tempat isian seperti [isi: …] dan daftar di "## Data yang dibutuhkan".
+- Tutup dengan "## Langkah berikutnya" berisi 1–3 aksi singkat.
+- Maksimal sekitar 350 kata.`}
+function workPrompt(t,ctx=''){const m=BY[t.div]||BY.lucky;if(m.dept==='studio')return studioPrompt(t,m,ctx);const today=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});return `Hari ini: ${today}.
 Kamu adalah ${m.name}, karyawan AI bagian ${m.role} di Lucky Corporation — tim AI pribadi seorang Store Head toko ritel perlengkapan outdoor Eiger. Pekerjaan toko sangat dinamis, jadi hasilmu harus cepat dipakai.
 Fokusmu: ${m.focus}.
 
@@ -760,14 +939,19 @@ async function work(id){
   if(WK[t.div]&&WK[t.div].trip)await WK[t.div].trip.catch(()=>{});
   updateOffice();
   try{
-    const used=new Set();let ctx='',ofaErr='';
-    if(await ensureOfa()){
+    const used=new Set();let ctx='',ofaErr='';const isStudio=(BY[t.div]||{}).dept==='studio';
+    if(isStudio){
+      await ensureStudio();
+      if(mcp&&stSheet){const w=WK[t.div];if(w){w.mood='Membuka catatan penjualan…';updateOffice()}
+        try{ctx=await studioContext(used)}catch(e){ofaErr='Catatan penjualan tidak terbaca: '+((e&&e.message)||'gagal')}
+        finally{if(w){w.mood='';updateOffice()}}}
+    }else if(await ensureOfa()){
       const w=WK[t.div];if(w){w.mood='Membuka data OFA Hub…';updateOffice()}
       try{const c=await ofaContext(t.div,used);ctx=c.text;if(c.errs.length&&!c.text)ofaErr='Data OFA tidak terbaca: '+c.errs[0]}
       finally{if(w){w.mood='';updateOffice()}}
     }
     const opts={modelTier:'default',cache:false,onText:({text})=>{live[id]=text;liveUpdate(id)}};
-    if(ofaReady()&&!ofaErr)opts.tools=[ofaTool(t.div,used)];
+    if(!isStudio&&ofaReady()&&!ofaErr)opts.tools=[ofaTool(t.div,used)];
     let r;
     try{r=await sample(workPrompt(t,ctx),opts)}
     catch(e){
@@ -803,8 +987,9 @@ function liveUpdate(id){updateOffice();if(openId===id){const el=$('#resBody');if
 
 /* board & sheet */
 function render(){renderBoard();updateOffice();resumeBar();stats();if(openId)openSheet(openId,true)}
+let deptF='';
 function renderBoard(){
-  const list=filter?tasks.filter(t=>t.div===filter):tasks;
+  const list=filter?tasks.filter(t=>t.div===filter):deptF?tasks.filter(t=>((BY[t.div]||{}).dept||'')===deptF||(!t.div&&deptF==='toko')):tasks;
   $('#filterTxt').innerHTML=filter?`Menampilkan tugas ${esc(BY[filter].name)} · <a href="#" id="clr">tampilkan semua</a>`:'Ketuk pegawai di kantor untuk melihat tugasnya saja.';
   $('#board').innerHTML=COLS.map(([k,label])=>{
     let items=list.filter(t=>eff(t)===k);if(k==='selesai')items=items.sort((a,b)=>(b.done||0)-(a.done||0));
@@ -911,7 +1096,16 @@ function aiChip(){
 
 /* boot */
 buildLabels();
-$('#div').insertAdjacentHTML('beforeend',TEAM.map(m=>`<option value="${m.id}">${esc(m.name)} · ${esc(m.role)}</option>`).join(''));
+{const opt=m=>`<option value="${m.id}">${esc(m.name)} · ${esc(m.role)}</option>`;
+$('#div').insertAdjacentHTML('beforeend',`<optgroup label="Operasional Toko">${TEAM.filter(m=>m.dept==='toko').map(opt).join('')}</optgroup><optgroup label="Lukky Studio (Lucky Sprouts)">${TEAM.filter(m=>m.dept==='studio').map(opt).join('')}</optgroup>`)}
+document.querySelectorAll('#deptSeg button').forEach(b=>b.onclick=()=>{deptF=b.dataset.d;filter=null;document.querySelectorAll('#deptSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderBoard();updateOffice();if(window.__goRoom&&deptF)window.__goRoom(deptF)});
+$('#stSave').addEventListener('click',async()=>{
+  const n=$('#stNote'),raw=$('#stSheet').value.trim(),id=raw?parseSheetId(raw):'';
+  if(raw&&!id){n.textContent='Link atau ID spreadsheet tidak dikenali.';return}
+  stProfile=$('#stProf').value;stSheet=id;
+  if(!stRef){n.textContent='Dipakai di sesi ini (penyimpanan belum tersedia).';return}
+  try{await stRef.set({text:stProfile,sheetId:stSheet,updated:Date.now()});n.textContent='Profil Lukky Studio tersimpan.'}catch(e){n.textContent='Gagal menyimpan.'}
+});
 $('#presets').innerHTML=PRESETS.map(p=>`<button type="button">${esc(p)}</button>`).join('');
 render();setInterval(clock,30000);setInterval(ambient,7000);
 loadThree().then(()=>{init3D();has3D=true;$('#loading').remove()}).catch(err=>{$('#loading').remove();$('#gl').style.display='none';$('#labels').style.display='none';$('#fb').classList.add('on');console.warn('3D tidak tersedia',err)});
@@ -934,6 +1128,8 @@ cap('db').then(db=>{
     tasks.sort((a,b)=>b.created-a.created);render();
   },()=>{clearTimeout(tm);chip('#cDb','warn','Penyimpanan terputus')});
   profRef.get().then(s=>{if(s.exists){profile=String(s.data().text||'');$('#prof').value=profile}}).catch(()=>{});
+  stRef=db.doc('settings/studio');
+  stRef.get().then(s=>{if(s.exists){const d=s.data();stProfile=String(d.text||'');stSheet=String(d.sheetId||'');$('#stProf').value=stProfile;$('#stSheet').value=stSheet?'https://docs.google.com/spreadsheets/d/'+stSheet:''}}).catch(()=>{});
   ofaRef=db.doc('settings/ofa');
   ofaRef.get().then(s=>{if(s.exists){ofaId=String(s.data().spreadsheetId||'');$('#ofaId').value=ofaId?'https://docs.google.com/spreadsheets/d/'+ofaId:''}ofaChip()}).catch(()=>ofaChip());
 });
