@@ -644,8 +644,8 @@ async function readOfa(key,cari){
 function ofaTool(id,used){
   const keys=Object.keys(OFA_SETS);
   return{name:'baca_data_ofa',
-    description:'Membaca data asli toko EIGER 7014 Solo Baru dari OFA Hub (Google Sheets). Dataset: '+keys.map(k=>k+' = '+OFA_SETS[k].desc).join('; ')+'. Data pelanggan tidak tersedia.',
-    inputSchema:{type:'object',properties:{dataset:{type:'string',enum:keys,description:'nama dataset'},cari:{type:'string',description:'kata kunci penyaring (SKU, nama artikel, nama RA, tanggal). Wajib untuk stok_pusat dan promo.'}},required:['dataset']},
+    description:'Baca data asli toko EIGER 7014 dari OFA Hub (Google Sheets). Isi dataset dengan salah satu nama dataset dari instruksi. Isi cari untuk menyaring (wajib untuk stok_pusat dan promo).',
+    inputSchema:{type:'object',properties:{dataset:{type:'string',description:'nama dataset, mis. dashboard_ra'},cari:{type:'string',description:'kata kunci penyaring'}},required:['dataset']},
     execute:async({dataset,cari})=>{
       const w=WK[id];const lab=(OFA_SETS[dataset]||{}).label||dataset;
       if(w){w.mood=`Membaca data OFA: ${lab}…`;updateOffice()}
@@ -696,7 +696,7 @@ Aturan menulis:
 ${ctx?`DATA ASLI TOKO DARI OFA HUB (EIGER Store 7014 Soekarno Solo Baru) — gunakan angka ini, jangan tulis tempat isian untuk data yang sudah ada di sini. Jika profil toko kosong, anggap data ini sebagai profil toko:
 ${ctx}
 
-`:''}Akses data tambahan: kamu punya alat baca_data_ofa untuk membaca data ASLI toko dari OFA Hub. Pakai alat itu setiap kali tugas menyangkut angka atau data toko (sales, target, traffic, RA, produk, stok, barang masuk, promo, new arrival, blind counting, PICA, tinggalan, SH Kit). Dataset yang paling relevan untukmu: ${(OFA_FOR[m.id]||[]).join(', ')}. Hitung dari angka yang kamu baca; jangan mengarang. Tambahkan bagian "## Sumber data" berisi dataset dan periode yang dipakai.`:''}`}
+`:''}Akses data tambahan: kamu punya alat baca_data_ofa untuk membaca data ASLI toko dari OFA Hub. Pakai alat itu setiap kali tugas menyangkut angka atau data toko (sales, target, traffic, RA, produk, stok, barang masuk, promo, new arrival, blind counting, PICA, tinggalan, SH Kit). Nama dataset yang tersedia: ${Object.keys(OFA_SETS).map(k=>k+' ('+OFA_SETS[k].desc+')').join('; ')}. Yang paling relevan untukmu: ${(OFA_FOR[m.id]||[]).join(', ')}. Hitung dari angka yang kamu baca; jangan mengarang. Tambahkan bagian "## Sumber data" berisi dataset dan periode yang dipakai.`:''}`}
 function dispatch(id,div){transit.add(id);render();deliver(div,()=>{transit.delete(id);pump()})}
 async function route(id){
   const t=tasks.find(x=>x.id===id);if(!t)return;
@@ -727,7 +727,14 @@ async function work(id){
     }
     const opts={modelTier:'default',cache:false,onText:({text})=>{live[id]=text;liveUpdate(id)}};
     if(ofaReady()&&!ofaErr)opts.tools=[ofaTool(t.div,used)];
-    const r=await sample(workPrompt(t,ctx),opts);
+    let r;
+    try{r=await sample(workPrompt(t,ctx),opts)}
+    catch(e){
+      if(!opts.tools||(e&&['not_granted','rate_limited'].includes(e.code)))throw e;
+      console.warn('Alat OFA ditolak, lanjut tanpa alat:',e&&e.message);
+      delete opts.tools;live[id]='';
+      r=await sample(workPrompt(t,ctx).replace(/Akses data tambahan:[\s\S]*?Sumber data" berisi dataset dan periode yang dipakai\./,'Tambahkan bagian "## Sumber data" berisi dataset dan periode yang dipakai.'),opts);
+    }
     t.sumber=[...used];
     flash[t.div]=Date.now();setTimeout(updateOffice,2700);
     patch(id,{status:'cek',hasil:r.text,done:Date.now(),sumber:[...used],err:ofaErr});
