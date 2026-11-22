@@ -107,6 +107,10 @@ body.noscroll{overflow:hidden}
 .clip-form input[type=url],.clip-form input[type=text],.clip-form select,.clip-form textarea{border:2px solid var(--line);background:var(--bg);border-radius:12px;padding:9px 11px;font-size:16px;font-weight:400;min-height:44px}
 .clip-form textarea{min-height:120px;resize:vertical}.clip-form textarea.short{min-height:64px}
 .clip-form input[type=file]{font-size:14px;font-weight:400}
+.clip-form[data-mode=link] .only-file,.clip-form[data-mode=file] .only-link{display:none!important}
+.ck .ph{width:150px;aspect-ratio:9/16;border-radius:10px;background:linear-gradient(160deg,#1B2A4A,#e0457b);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;padding:8px}
+.ck .ph b{font:800 34px Sora,Fredoka,sans-serif}.ck .ph span{font-size:12px;opacity:.85}
+.ck .acts a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .clip-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .chk{display:flex!important;grid-template-columns:none;align-items:flex-start;gap:8px!important;font-weight:600}.chk input{width:20px;height:20px;margin-top:1px;flex:none}
 .clip-out{display:grid;gap:12px;align-content:start}
@@ -120,7 +124,7 @@ body.noscroll{overflow:hidden}
 .car-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
 .car-strip img{width:180px;aspect-ratio:4/5;border-radius:10px;flex:none;box-shadow:0 4px 12px -6px rgba(0,0,0,.35)}
 @media (max-width:820px){.clip-grid{grid-template-columns:1fr}.clip-row{grid-template-columns:1fr 1fr}}
-@media (max-width:420px){.ck{grid-template-columns:1fr}.ck video{width:100%;max-width:220px}}
+@media (max-width:420px){.ck{grid-template-columns:1fr}.ck video,.ck .ph{width:100%;max-width:220px}}
 .src{margin-top:12px;font-size:13px;color:var(--muted);background:var(--surf);border-radius:10px;padding:8px 12px}
 .ov{position:fixed;inset:0;background:rgba(8,12,34,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:20}
 .ov.on{display:flex}
@@ -198,21 +202,25 @@ body.noscroll{overflow:hidden}
   <section class="clip" id="clip" aria-labelledby="clipH">
     <div class="clip-head"><div><h2 id="clipH">Video Clipper · Zuzu</h2><p>Lukky Studio · ubah video panjang jadi klip 9:16 bersubtitle, siap diunggah ke Reels, TikTok, dan Shorts.</p></div></div>
     <div class="clip-grid">
-      <div class="clip-form">
+      <div class="clip-form" id="cForm" data-mode="link">
+        <div class="seg" id="cMode" role="group" aria-label="Sumber video"><button type="button" data-m="link" aria-pressed="true">Dari link YouTube</button><button type="button" data-m="file" aria-pressed="false">Upload file video</button></div>
         <label>Link video sumber<input id="cLink" type="url" inputmode="url" placeholder="https://www.youtube.com/watch?v=…" autocomplete="off"></label>
-        <label>Kredit kreator (ditampilkan di klip &amp; caption)<input id="cCredit" type="text" placeholder="@namachannel" autocomplete="off"></label>
-        <label>File video (unduh dari kreator / dashboard program clipper)<input id="cFile" type="file" accept="video/*"></label>
-        <label>Transkrip dengan waktu<textarea id="cTr" placeholder="Di YouTube: buka video → … (Lainnya) → Tampilkan transkrip → blok dan salin semua, lalu tempel di sini. Format SRT juga bisa."></textarea></label>
+        <label>Kredit kreator (ditampilkan di caption)<input id="cCredit" type="text" placeholder="@namachannel" autocomplete="off"></label>
+        <label class="only-file">File video (unduh dari kreator / dashboard program clipper)<input id="cFile" type="file" accept="video/*"></label>
+        <label class="only-file">Transkrip dengan waktu<textarea id="cTr" placeholder="Di YouTube: buka video → … (Lainnya) → Tampilkan transkrip → blok dan salin semua, lalu tempel di sini. Format SRT juga bisa."></textarea></label>
         <div class="clip-row">
-          <label>Jumlah klip<select id="cN"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
-          <label>Durasi<select id="cDur"><option value="15-30">15–30 detik</option><option value="30-45" selected>30–45 detik</option><option value="45-60">45–60 detik</option></select></label>
-          <label>Tata letak<select id="cLay"><option value="blur">Video utuh + latar blur</option><option value="crop">Crop tengah (penuh)</option></select></label>
+          <label class="only-file">Jumlah klip<select id="cN"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+          <label>Durasi klip<select id="cDur"><option value="15-30">15–30 detik</option><option value="30-45" selected>30–45 detik</option><option value="45-60">45–60 detik</option></select></label>
+          <label class="only-file">Tata letak<select id="cLay"><option value="blur">Video utuh + latar blur</option><option value="crop">Crop tengah (penuh)</option></select></label>
+          <label class="only-link">Bagian video (opsional)<input id="cRange" type="text" placeholder="10:00-25:00" autocomplete="off"></label>
         </div>
-        <label>Momen manual (opsional, satu per baris: 1:20-2:05 Judul)<textarea id="cMan" class="short" placeholder="Kosongkan agar Zuzu memilih momen terbaik sendiri"></textarea></label>
-        <label class="chk"><input id="cSub" type="checkbox" checked> Subtitle dari transkrip</label>
+        <label class="only-link">Arahan untuk Zuzu (opsional)<input id="cAsk" type="text" placeholder="mis. fokus tips praktis atau momen lucu" autocomplete="off"></label>
+        <label class="only-file">Momen manual (opsional, satu per baris: 1:20-2:05 Judul)<textarea id="cMan" class="short" placeholder="Kosongkan agar Zuzu memilih momen terbaik sendiri"></textarea></label>
+        <label class="chk only-file"><input id="cSub" type="checkbox" checked> Subtitle dari transkrip</label>
         <label class="chk"><input id="cOk" type="checkbox"> Saya punya izin kreator (program clipper resmi / channel sendiri) untuk video ini</label>
-        <button class="btn pri" id="cGo" type="button">Buat klip</button>
-        <p class="note" id="cNote">Saat merender, biarkan tab ini tetap terbuka di depan. Klip dirender secepat durasinya.</p>
+        <button class="btn pri" id="cGo" type="button">Proses dari link</button>
+        <p class="note" id="cNote">Video diproses di server OpusClip, jadi tidak perlu diunduh. Membatasi bagian video menghemat kuota.</p>
+        <p class="note only-link" id="cQuota"></p>
       </div>
       <div class="clip-out" id="cOut"><div class="empty">Klip yang sudah jadi akan muncul di sini, lengkap dengan caption dan tombol unduh.</div></div>
     </div>
@@ -1282,9 +1290,88 @@ async function renderClip(video,clip,o,cues,onProg){
   video.pause();rec.stop();await done;
   const type=(mime||'video/webm').split(';')[0];return{blob:new Blob(chunks,{type}),ext:type.includes('mp4')?'mp4':'webm',ready:/avc1/.test(mime)&&/mp4a/.test(mime),h264:/avc1/.test(mime)};
 }
+/* ===== OpusClip (link mode) ===== */
+let clipMode='link';
+document.querySelectorAll('#cMode button').forEach(b=>b.onclick=()=>{clipMode=b.dataset.m;$('#cForm').dataset.mode=clipMode;document.querySelectorAll('#cMode button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  $('#cGo').textContent=clipMode==='link'?'Proses dari link':'Buat klip';
+  $('#cNote').textContent=clipMode==='link'?'Video diproses di server OpusClip, jadi tidak perlu diunduh. Membatasi bagian video menghemat kuota.':'Saat merender, biarkan tab ini tetap terbuka di depan. Klip dirender secepat durasinya.'});
+const opus=async(tool,input)=>{const r=await mcp.callTool('OpusClip',tool,input||{});return(r&&r.payload)||{}};
+const opusPolling=new Set();
+function opusCaption(c,credit){const tags=Array.isArray(c.hashtags)?c.hashtags.join(' '):String(c.hashtags||'');return[c.title||'',c.description&&c.description!==c.title?c.description:'',credit?'Sumber: '+credit:'',tags].filter(Boolean).join('\n\n')}
+function opusSlim(c){return{id:String(c.clip_id||c.clipId||c.id||''),title:String(c.title||''),description:String(c.description||''),hashtags:Array.isArray(c.hashtags)?c.hashtags:String(c.hashtags||'').split(/\s+/).filter(Boolean),score:c.score!=null?Number(c.score):null,rank:c.rank!=null?Number(c.rank):null,duration:Number(c.duration||c.duration_sec||c.durationSec||0),preview:String(c.preview_url||c.previewUrl||'')}}
+function renderOpusClips(projectId,clips,credit){
+  const out=$('#cOut');out.innerHTML='';
+  clips.forEach((c,i)=>{
+    const card=document.createElement('div');card.className='ck';const cap=opusCaption(c,credit);
+    card.innerHTML=`<div class="ph"><b>${c.score!=null?Math.round(c.score):'#'+(i+1)}</b><span>${c.score!=null?'skor viral':'peringkat'}</span><span>${c.duration?Math.round(c.duration)+' detik':''}</span></div><div><b>${esc(c.title||'Klip '+(i+1))}</b><div class="meta">Peringkat ${c.rank||i+1}${c.duration?' · '+Math.round(c.duration)+' detik':''} · 9:16 · OpusClip</div><textarea readonly aria-label="Caption klip ${i+1}">${esc(cap)}</textarea><div class="acts">${c.preview?`<a class="btn" href="${esc(c.preview)}" target="_blank" rel="noopener">Pratinjau</a>`:''}<button class="btn pri" type="button" data-hd>Siapkan HD</button><button class="btn" type="button" data-cp>Salin caption</button></div><p class="note"></p></div>`;
+    const nn=card.querySelector('.note');
+    card.querySelector('[data-cp]').onclick=async()=>{try{await navigator.clipboard.writeText(cap);nn.textContent='Caption disalin.'}catch(e){nn.textContent='Blok teks caption lalu salin manual.'}};
+    card.querySelector('[data-hd]').onclick=async e=>{const b=e.currentTarget;b.disabled=true;nn.textContent='OpusClip menyiapkan file HD…';
+      try{for(let k=0;k<60;k++){const r=await opus('opusclip_export_clip',{projectId,clipId:c.id,target:'hd'});const st=String(r.status||'');
+          if(st==='ready'&&(r.export_url||r.exportUrl)){const u=r.export_url||r.exportUrl;b.outerHTML=`<a class="btn pri" href="${esc(u)}" target="_blank" rel="noopener">Unduh HD</a>`;nn.textContent='File HD siap. Link unduhan berlaku sementara, jadi unduh sekarang.';return}
+          if(st==='unavailable'){nn.textContent='File HD tidak tersedia untuk klip ini: '+(r.message||'cek di aplikasi OpusClip.');b.disabled=false;return}
+          await sleep(6000)}
+        nn.textContent='Render HD masih berjalan. Tekan lagi beberapa menit lagi.';b.disabled=false}
+      catch(err){nn.textContent='Gagal menyiapkan HD: '+((err&&err.message)||'coba lagi');b.disabled=false}};
+    out.appendChild(card);
+  });
+}
+async function pollOpus(taskId){
+  const t0=tasks.find(x=>x.id===taskId);if(!t0||!t0.opus||opusPolling.has(taskId))return;
+  const {projectId,credit,link}=t0.opus;opusPolling.add(taskId);running.add(taskId);
+  const note=$('#cNote');let lastN=-1,same=0;
+  try{
+    for(let i=0;i<120;i++){
+      let r;try{r=await opus('opusclip_list_clips',{projectId})}catch(e){if(i<3){await sleep(15000);continue}throw e}
+      const list=(r.clips||r.items||r.data||[]).map(opusSlim).filter(c=>c.id);const stage=String(r.stage||r.status||'');
+      WK.zuzu.mood=list.length?`OpusClip: ${list.length} klip jadi…`:`OpusClip memproses${stage?' ('+stage.toLowerCase()+')':''}…`;updateOffice();
+      note.textContent=`OpusClip sedang memproses${stage?' · tahap: '+stage:''}${list.length?' · '+list.length+' klip':''}. Halaman boleh ditutup; progres dicek lagi saat dibuka.`;
+      if(/fail|error|cancel/i.test(stage)&&!list.length)throw new Error('OpusClip gagal memproses video ('+stage+'). Pastikan link publik dan bisa diputar.');
+      same=list.length&&list.length===lastN?same+1:0;lastN=list.length;
+      if(list.length&&(!stage||/complete|done|finish|success|ready|conclude/i.test(stage)||same>=2)){
+        list.sort((a,b)=>(a.rank??99)-(b.rank??99)||(b.score??0)-(a.score??0));
+        const top=list.slice(0,10);renderOpusClips(projectId,top,credit);
+        const hasil=`# Klip dari link YouTube (${top.length})\n\nSumber: ${link}${credit?' · Kredit: '+credit:''}\nDiproses oleh OpusClip (proyek ${projectId}).\n\n`+top.map((c,k)=>`## ${k+1}. ${c.title||'Klip'}\n- ${c.score!=null?'Skor viral '+Math.round(c.score)+' · ':''}${c.duration?Math.round(c.duration)+' detik':''}\n- Caption: ${opusCaption(c,credit).replace(/\n+/g,' ')}\n${c.preview?'- Pratinjau: '+c.preview:''}`).join('\n\n')+`\n\n## Langkah berikutnya\n1. Buka panel Video Clipper, tekan "Siapkan HD" lalu "Unduh HD" pada klip yang dipilih.\n2. Unggah dengan caption di atas sesuai aturan program clipper.`;
+        flash.zuzu=Date.now();setTimeout(updateOffice,2700);
+        patch(taskId,{status:'cek',hasil,done:Date.now(),opus:{...t0.opus,clips:top},sumber:['OpusClip']});
+        note.textContent=`Selesai: ${top.length} klip dari OpusClip. Tekan "Siapkan HD" untuk mengambil file unduhan.`;return;
+      }
+      await sleep(20000);
+    }
+    note.textContent='OpusClip masih memproses. Buka lagi halaman ini nanti; progres akan dicek otomatis.';
+  }catch(e){patch(taskId,{status:'cek',err:'Klip OpusClip gagal: '+((e&&e.message)||'kesalahan tidak dikenal'),done:Date.now()});note.textContent='Gagal: '+((e&&e.message)||'kesalahan tidak dikenal')}
+  finally{opusPolling.delete(taskId);running.delete(taskId);WK.zuzu.mood='';render()}
+}
+function resumeOpus(){if(!mcp)return;for(const t of tasks)if(t.opus&&t.opus.projectId&&t.status==='proses'&&!opusPolling.has(t.id))pollOpus(t.id);
+  const last=tasks.find(t=>t.opus&&t.opus.clips&&t.opus.clips.length);if(last&&$('#cOut .empty'))renderOpusClips(last.opus.projectId,last.opus.clips,last.opus.credit)}
+async function runOpus(){
+  const note=$('#cNote'),link=$('#cLink').value.trim(),credit=$('#cCredit').value.trim();
+  if(!/^https?:\/\/\S+/.test(link)){note.textContent='Tempel link video yang valid (YouTube, Google Drive, Vimeo, dll).';return}
+  if(!$('#cOk').checked){note.textContent='Centang konfirmasi izin kreator dulu.';return}
+  if(!mcp){note.textContent='Mode link butuh koneksi OpusClip, yang hanya tersedia di versi Claude dashboard ini.';return}
+  const [mn,mx]=$('#cDur').value.split('-').map(Number),rg=$('#cRange').value.trim();let rangeStart,rangeEnd;
+  if(rg){const m=rg.match(/^(\d{1,2}:\d{2}(?::\d{2})?)\s*[-–]\s*(\d{1,2}:\d{2}(?::\d{2})?)$/);if(!m){note.textContent='Format bagian video: 10:00-25:00';return}rangeStart=tsSec(m[1]);rangeEnd=tsSec(m[2]);if(rangeEnd<=rangeStart){note.textContent='Waktu selesai harus setelah waktu mulai.';return}}
+  $('#cGo').disabled=true;note.textContent='Mengecek kuota OpusClip…';
+  try{
+    try{const u=await opus('opusclip_get_usage');const rem=u.credits&&u.credits.remaining_minutes;if(rem!=null){$('#cQuota').textContent=`Sisa kuota OpusClip: ${rem} menit.`;if(rem<=0)throw new Error('Kuota OpusClip habis. Isi ulang di aplikasi OpusClip atau pakai mode upload file.')}}catch(e){if(/Kuota/.test(e.message))throw e}
+    note.textContent='Mengirim link ke OpusClip…';WK.zuzu.mood='Mengirim link ke OpusClip…';updateOffice();
+    const ask=$('#cAsk').value.trim();
+    const args={videoUrl:link,aspectRatio:'portrait',clipDurationsSec:[[mn,mx]],enableCaption:true,enableAutoHook:true,
+      customPrompt:'Pilih momen yang paling kuat untuk Reels/TikTok/Shorts: berdiri sendiri, hook kuat di 3 detik pertama, berakhir di akhir kalimat.'+(ask?' Arahan tambahan: '+ask:'')};
+    if(credit)args.title=credit+' · klip';if(rangeStart!=null){args.rangeStart=rangeStart;args.rangeEnd=rangeEnd}
+    const r=await opus('opusclip_submit_project',args);
+    const projectId=String(r.project_id||r.projectId||r.id||(r.project&&(r.project.id||r.project.project_id))||'');
+    if(!projectId)throw new Error('OpusClip tidak mengembalikan ID proyek.'+(r.message?' '+r.message:''));
+    const t={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),text:`Video clipper (OpusClip): ${link}${credit?' ('+credit+')':''}`,judul:'Klip OpusClip '+(credit||'').slice(0,40),div:'zuzu',prio:'normal',status:'proses',created:Date.now(),started:Date.now(),hasil:'',err:'',opus:{projectId,link,credit}};
+    tasks.unshift(t);save(t);render();$('#cOut').innerHTML='<div class="empty">OpusClip sedang memotong video. Biasanya beberapa menit, tergantung panjang video.</div>';
+    pollOpus(t.id);
+  }catch(e){note.textContent='Gagal: '+((e&&e.message)||'kesalahan tidak dikenal');WK.zuzu.mood='';updateOffice()}
+  finally{$('#cGo').disabled=false}
+}
 {
   let busy=false;
   $('#cGo').addEventListener('click',async()=>{
+    if(clipMode==='link'){runOpus();return}
     if(busy)return;const note=$('#cNote'),out=$('#cOut');
     const file=$('#cFile').files[0],link=$('#cLink').value.trim(),credit=$('#cCredit').value.trim(),man=parseManual($('#cMan').value);
     const cues=parseTranscript($('#cTr').value);
@@ -1391,7 +1478,7 @@ cap('db').then(db=>{
     const mine=new Map(tasks.map(t=>[t.id,t]));
     tasks=snap.docs.map(d=>{const v={...d.data(),id:d.id},loc=mine.get(d.id);return running.has(d.id)&&loc?loc:v});
     for(const [id,t] of mine)if(!tasks.some(x=>x.id===id)&&(chains[id]||running.has(id)))tasks.push(t);
-    tasks.sort((a,b)=>b.created-a.created);render();
+    tasks.sort((a,b)=>b.created-a.created);render();if(!window.__opusResumed&&!snap.metadata.fromCache){window.__opusResumed=1;setTimeout(()=>{if(typeof resumeOpus==='function')resumeOpus()},800)}
   },()=>{clearTimeout(tm);chip('#cDb','warn','Penyimpanan terputus')});
   profRef.get().then(s=>{if(s.exists){profile=String(s.data().text||'');$('#prof').value=profile}}).catch(()=>{});
   stRef=db.doc('settings/studio');

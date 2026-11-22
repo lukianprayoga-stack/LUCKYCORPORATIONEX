@@ -30,7 +30,8 @@ Tombol di kiri atas kantor memindahkan kamera: Operasional Toko · Lukky Studio 
 ## Produksi konten
 
 - **Carousel otomatis:** hasil Mochi yang berisi blok `slides` dirender menjadi slide 1080x1350 bergaya Lukky Studio; unduh per slide (PNG) atau semua (ZIP).
-- **Video Clipper (Zuzu):** upload video + tempel transkrip (YouTube: Tampilkan transkrip) + kredit kreator, centang izin program clipper. Zuzu memilih momen terbaik (atau isi momen manual), lalu klip 9:16 dirender di browser dengan judul hook, subtitle, dan kredit sumber. Hasil MP4 (H.264; AAC jika browser mendukung) atau WebM, lengkap dengan caption + hashtag. Render berjalan secepat durasi klip; biarkan tab tetap terbuka. Di GitHub Pages, AI tidak aktif, jadi isi momen manual.
+- **Video Clipper (Zuzu), mode link:** tempel link YouTube (atau Google Drive, Vimeo, dll.) + kredit kreator, centang izin program clipper. Video diproses di server OpusClip lewat koneksi OpusClip pemilik (memakai kuota OpusClip; bisa dibatasi ke bagian video tertentu). Klip 9:16 bercaption muncul dengan skor, caption + kredit, pratinjau, dan tombol Siapkan/Unduh HD. Progres dicek lagi otomatis saat dashboard dibuka.
+- **Video Clipper (Zuzu), mode upload:** upload video + tempel transkrip (YouTube: Tampilkan transkrip) + kredit kreator, centang izin program clipper. Zuzu memilih momen terbaik (atau isi momen manual), lalu klip 9:16 dirender di browser dengan judul hook, subtitle, dan kredit sumber. Hasil MP4 (H.264; AAC jika browser mendukung) atau WebM, lengkap dengan caption + hashtag. Render berjalan secepat durasi klip; biarkan tab tetap terbuka. Di GitHub Pages, AI tidak aktif, jadi isi momen manual.
 - **Paket konten tiap pagi:** tugas terjadwal di akun Claude membuat ide, carousel PNG, caption, story, dan naskah reels, menyimpannya ke Google Drive ("Lukky Studio – Konten Harian"), dan mencatatnya di papan atas nama Mochi.
 
 ## Data OFA Hub
