@@ -23,9 +23,15 @@ Kantor 3D WebGL (Three.js) bergaya kantor kartun yang sibuk, dengan dinding bata
 
 **Operasional Toko** (manusia kartun kantoran): Lucky (CEO Assistant), Raka, Sinta, Dimas, Nala, Bima, Tari.
 
-**Lukky Studio** (Lucky Sprouts, ruang kedua di sebelah kanan): Pip (Produk & Template), Mochi (Konten Instagram), Kiko (Order & Admin DM), Tumi (Jasa Custom & Dashboard), Bobo (Keuangan Studio). Mereka membaca Profil Lukky Studio dan catatan penjualan (identitas pembeli disembunyikan). Profil dan ID spreadsheet disimpan di pengaturan akun Claude, tidak di kode ini.
+**Lukky Studio** (Lucky Sprouts, ruang kedua di sebelah kanan): Pip (Produk & Template), Mochi (Konten Instagram), Kiko (Order & Admin DM), Tumi (Jasa Custom & Dashboard), Bobo (Keuangan Studio), Zuzu (Video Clipper). Mereka membaca Profil Lukky Studio dan catatan penjualan (identitas pembeli disembunyikan). Profil dan ID spreadsheet disimpan di pengaturan akun Claude, tidak di kode ini.
 
 Tombol di kiri atas kantor memindahkan kamera: Operasional Toko · Lukky Studio · Semua.
+
+## Produksi konten
+
+- **Carousel otomatis:** hasil Mochi yang berisi blok `slides` dirender menjadi slide 1080x1350 bergaya Lukky Studio; unduh per slide (PNG) atau semua (ZIP).
+- **Video Clipper (Zuzu):** upload video + tempel transkrip (YouTube: Tampilkan transkrip) + kredit kreator, centang izin program clipper. Zuzu memilih momen terbaik (atau isi momen manual), lalu klip 9:16 dirender di browser dengan judul hook, subtitle, dan kredit sumber. Hasil MP4 (H.264; AAC jika browser mendukung) atau WebM, lengkap dengan caption + hashtag. Render berjalan secepat durasi klip; biarkan tab tetap terbuka. Di GitHub Pages, AI tidak aktif, jadi isi momen manual.
+- **Paket konten tiap pagi:** tugas terjadwal di akun Claude membuat ide, carousel PNG, caption, story, dan naskah reels, menyimpannya ke Google Drive ("Lukky Studio – Konten Harian"), dan mencatatnya di papan atas nama Mochi.
 
 ## Data OFA Hub
 

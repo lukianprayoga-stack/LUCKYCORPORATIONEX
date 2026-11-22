@@ -6,7 +6,7 @@
 <title>Lucky Corporation HQ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Sora:wght@600;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap" rel="stylesheet">
 <style>
 /* VOICE: busy cartoon office, warm and funny, but a working tool for a store head
    IDEA: a lit 3D office (WebGL) you can orbit; each desk is a division of AI staff
@@ -99,6 +99,28 @@ body.noscroll{overflow:hidden}
 .prof textarea{width:100%;min-height:96px;margin:8px 0}
 .ofa-set{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}.ofa-set label{display:block;margin-bottom:6px}
 .ofa-row{display:flex;gap:8px;flex-wrap:wrap}.ofa-row input{flex:1 1 260px;border:2px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;font-size:16px;min-height:44px}
+.clip{margin-top:28px;background:var(--surf);border-radius:20px;padding:clamp(14px,2.5vw,22px)}
+.clip-head h2{margin:0}.clip-head p{margin:4px 0 14px;color:var(--muted)}
+.clip-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px}
+.clip-form{display:grid;gap:10px;align-content:start}
+.clip-form label{display:grid;gap:4px;font-weight:600;font-size:14px}
+.clip-form input[type=url],.clip-form input[type=text],.clip-form select,.clip-form textarea{border:2px solid var(--line);background:var(--bg);border-radius:12px;padding:9px 11px;font-size:16px;font-weight:400;min-height:44px}
+.clip-form textarea{min-height:120px;resize:vertical}.clip-form textarea.short{min-height:64px}
+.clip-form input[type=file]{font-size:14px;font-weight:400}
+.clip-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.chk{display:flex!important;grid-template-columns:none;align-items:flex-start;gap:8px!important;font-weight:600}.chk input{width:20px;height:20px;margin-top:1px;flex:none}
+.clip-out{display:grid;gap:12px;align-content:start}
+.ck{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px}
+.ck video{width:150px;aspect-ratio:9/16;border-radius:10px;background:#000;object-fit:cover}
+.ck b{display:block;line-height:1.3}.ck .meta{font-size:13px;color:var(--muted);margin:2px 0 6px}
+.ck textarea{width:100%;min-height:84px;border:1px solid var(--line);border-radius:10px;padding:8px;font-size:14px;background:var(--surf)}
+.ck .acts{margin-top:6px}
+.prog{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px}.prog i{display:block;height:100%;width:0;background:#e0457b;transition:width .3s}
+.car{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.car-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+.car-strip img{width:180px;aspect-ratio:4/5;border-radius:10px;flex:none;box-shadow:0 4px 12px -6px rgba(0,0,0,.35)}
+@media (max-width:820px){.clip-grid{grid-template-columns:1fr}.clip-row{grid-template-columns:1fr 1fr}}
+@media (max-width:420px){.ck{grid-template-columns:1fr}.ck video{width:100%;max-width:220px}}
 .src{margin-top:12px;font-size:13px;color:var(--muted);background:var(--surf);border-radius:10px;padding:8px 12px}
 .ov{position:fixed;inset:0;background:rgba(8,12,34,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:20}
 .ov.on{display:flex}
@@ -173,6 +195,29 @@ body.noscroll{overflow:hidden}
   </div>
   <div class="board" id="board"></div>
 
+  <section class="clip" id="clip" aria-labelledby="clipH">
+    <div class="clip-head"><div><h2 id="clipH">Video Clipper · Zuzu</h2><p>Lukky Studio · ubah video panjang jadi klip 9:16 bersubtitle, siap diunggah ke Reels, TikTok, dan Shorts.</p></div></div>
+    <div class="clip-grid">
+      <div class="clip-form">
+        <label>Link video sumber<input id="cLink" type="url" inputmode="url" placeholder="https://www.youtube.com/watch?v=…" autocomplete="off"></label>
+        <label>Kredit kreator (ditampilkan di klip &amp; caption)<input id="cCredit" type="text" placeholder="@namachannel" autocomplete="off"></label>
+        <label>File video (unduh dari kreator / dashboard program clipper)<input id="cFile" type="file" accept="video/*"></label>
+        <label>Transkrip dengan waktu<textarea id="cTr" placeholder="Di YouTube: buka video → … (Lainnya) → Tampilkan transkrip → blok dan salin semua, lalu tempel di sini. Format SRT juga bisa."></textarea></label>
+        <div class="clip-row">
+          <label>Jumlah klip<select id="cN"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+          <label>Durasi<select id="cDur"><option value="15-30">15–30 detik</option><option value="30-45" selected>30–45 detik</option><option value="45-60">45–60 detik</option></select></label>
+          <label>Tata letak<select id="cLay"><option value="blur">Video utuh + latar blur</option><option value="crop">Crop tengah (penuh)</option></select></label>
+        </div>
+        <label>Momen manual (opsional, satu per baris: 1:20-2:05 Judul)<textarea id="cMan" class="short" placeholder="Kosongkan agar Zuzu memilih momen terbaik sendiri"></textarea></label>
+        <label class="chk"><input id="cSub" type="checkbox" checked> Subtitle dari transkrip</label>
+        <label class="chk"><input id="cOk" type="checkbox"> Saya punya izin kreator (program clipper resmi / channel sendiri) untuk video ini</label>
+        <button class="btn pri" id="cGo" type="button">Buat klip</button>
+        <p class="note" id="cNote">Saat merender, biarkan tab ini tetap terbuka di depan. Klip dirender secepat durasinya.</p>
+      </div>
+      <div class="clip-out" id="cOut"><div class="empty">Klip yang sudah jadi akan muncul di sini, lengkap dengan caption dan tombol unduh.</div></div>
+    </div>
+  </section>
+
   <details class="prof">
     <summary>Profil toko — dibaca semua karyawan sebelum bekerja</summary>
     <textarea id="prof" placeholder="Contoh: Toko di mall, 6 crew + 1 kasir, jam buka 10.00–22.00, target bulan ini Rp …, kategori terlaris: tas & sepatu hiking, sedang ada promo …"></textarea>
@@ -229,14 +274,17 @@ const TEAM=[
   kw:['custom','dashboard usaha','looker','katalog produk','penawaran','proposal','klien','brief','jasa']},
  {id:'bobo',name:'Bobo',role:'Keuangan Studio',dept:'studio',kind:'sprout',color:'#33446A',scarf:'#F26B4F',
   focus:'keuangan Lukky Studio: rekap penjualan dan pendapatan dari catatan penjualan, status bayar/kirim/follow-up, evaluasi harga setelah 20 penjualan, target bulanan, biaya dan laba',
-  kw:['pendapatan','rekap penjualan studio','laba','omzet studio','evaluasi harga','keuangan studio','target studio','harga jual']}
+  kw:['pendapatan','rekap penjualan studio','laba','omzet studio','evaluasi harga','keuangan studio','target studio','harga jual']},
+ {id:'zuzu',name:'Zuzu',role:'Video Clipper',dept:'studio',kind:'sprout',color:'#e0457b',scarf:'#ffffff',
+  focus:'video clipper dan konten video pendek: memilih momen terbaik dari video panjang (program clipper resmi), naskah reels/shorts/TikTok 15–60 detik, judul hook, caption dan hashtag video',
+  kw:['clip','klip','clipper','reels','shorts','tiktok','video pendek','youtube','potong video']}
 ];
 for(const m of TEAM){m.dept=m.dept||'toko';m.kind=m.kind||'human'}
 const BY=Object.fromEntries(TEAM.map(m=>[m.id,m]));
 const SX=15.6;
-const POS={pip:{x:12.6,z:-3.4},mochi:{x:18.6,z:-3.4},kiko:{x:12.4,z:2.6},tumi:{x:15.6,z:3.0},bobo:{x:18.8,z:2.6},lucky:{x:0,z:-3.6,big:1},ops:{x:-5.6,z:-3.4},sales:{x:5.6,z:-3.4},team:{x:-6.2,z:2.4},kreatif:{x:-2.1,z:2.8},laporan:{x:2.1,z:2.8},sistem:{x:6.2,z:2.4}};
+const POS={zuzu:{x:15.6,z:5.3},pip:{x:12.6,z:-3.4},mochi:{x:18.6,z:-3.4},kiko:{x:12.4,z:2.6},tumi:{x:15.6,z:3.0},bobo:{x:18.8,z:2.6},lucky:{x:0,z:-3.6,big:1},ops:{x:-5.6,z:-3.4},sales:{x:5.6,z:-3.4},team:{x:-6.2,z:2.4},kreatif:{x:-2.1,z:2.8},laporan:{x:2.1,z:2.8},sistem:{x:6.2,z:2.4}};
 const AISLE=-0.4,SPEED=1.7;
-const PRESETS=['Ide 5 konten Instagram Lukky Studio minggu depan','Balasan DM untuk calon pembeli Template Lamaran','Briefing pagi tim, fokus kejar target weekend','Checklist opening & closing toko','Caption promo akhir pekan untuk Instagram','Jadwal shift minggu depan untuk 6 crew','Rencana kerja saya hari ini','Rekap laporan mingguan toko'];
+const PRESETS=['Buat carousel Instagram Lukky Studio: 3 rumus Google Sheets untuk atur gaji','Ide 5 konten Instagram Lukky Studio minggu depan','Balasan DM untuk calon pembeli Template Lamaran','Briefing pagi tim, fokus kejar target weekend','Checklist opening & closing toko','Caption promo akhir pekan untuk Instagram','Jadwal shift minggu depan untuk 6 crew','Rencana kerja saya hari ini','Rekap laporan mingguan toko'];
 const COLS=[['antrian','Antrian'],['proses','Dikerjakan'],['cek','Siap dicek'],['selesai','Selesai']];
 const IDLE={lucky:'Siap terima perintah',ops:'Cek display…',sales:'Pantau target',team:'Siap briefing',kreatif:'Cari ide konten',laporan:'Rapikan arsip',sistem:'Siaga sistem'};
 const MAXRUN=3;
@@ -475,6 +523,13 @@ function init3D(){
     add(scene,new T.CylinderGeometry(.045,.04,.1,14),mat(CORAL),p.x+.45,H+.05,p.z+.15);
     add(scene,new T.CylinderGeometry(.07,.06,.1,12),mat('#ffffff'),p.x+.65,H+.05,p.z-.2);add(scene,new T.SphereGeometry(.09,12,10),mat('#3aa65b'),p.x+.65,H+.16,p.z-.2);
     stack(p.x+.45,p.z-.2,2+Math.floor(Math.random()*3),H,.24,.3);
+    if(m.id==='zuzu'){
+      const sm2=new T.MeshStandardMaterial({color:'#1d2440',emissive:new T.Color('#e0457b'),emissiveIntensity:.35,roughness:.3});
+      add(scene,BOX(.6,.36,.03),mat('#20263a'),p.x+.45,H+.33,p.z+.12);const s2=add(scene,new T.PlaneGeometry(.54,.3),sm2,p.x+.45,H+.33,p.z+.1,false);s2.rotation.y=Math.PI;
+      add(scene,BOX(.04,.16,.04),mat('#20263a'),p.x+.45,H+.08,p.z+.12);
+      add(scene,new T.CylinderGeometry(.02,.02,1.5,8),mat('#20263a'),p.x-1.1,.75,p.z+.3);
+      const rl=add(scene,new T.TorusGeometry(.22,.035,10,32),new T.MeshStandardMaterial({color:'#ffffff',emissive:new T.Color('#fff4e0'),emissiveIntensity:.9}),p.x-1.1,1.6,p.z+.3,false);rl.rotation.y=Math.PI/5;
+    }
   }
 
   /* workers */
@@ -901,7 +956,8 @@ Aturan menulis:
 - Jangan menyarankan membagikan file lewat link publik; file dibagikan ke Gmail pembeli dengan akses Dibatasi.
 - Jika butuh data yang tidak ada, beri tempat isian seperti [isi: …] dan daftar di "## Data yang dibutuhkan".
 - Tutup dengan "## Langkah berikutnya" berisi 1–3 aksi singkat.
-- Maksimal sekitar 350 kata.`}
+- Maksimal sekitar 350 kata.${m.id==='mochi'||/carousel|slide|postingan|konten/i.test(t.text)?`
+- Jika hasilmu berupa konten carousel/postingan Instagram, akhiri jawaban dengan blok kode berlabel slides (tiga backtick lalu kata slides) berisi JSON array 3–7 objek {"judul":"maks 8 kata","isi":"maks 32 kata"}. Slide pertama = cover dengan hook, slide terakhir = ajakan (mis. DM "TEMPLATE"). Dashboard akan merendernya otomatis menjadi slide desain Lukky Studio.`:''}`}
 function workPrompt(t,ctx=''){const m=BY[t.div]||BY.lucky;if(m.dept==='studio')return studioPrompt(t,m,ctx);const today=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});return `Hari ini: ${today}.
 Kamu adalah ${m.name}, karyawan AI bagian ${m.role} di Lucky Corporation — tim AI pribadi seorang Store Head toko ritel perlengkapan outdoor Eiger. Pekerjaan toko sangat dinamis, jadi hasilmu harus cepat dipakai.
 Fokusmu: ${m.focus}.
@@ -990,7 +1046,7 @@ function pump(){
   }
   render();
 }
-function liveUpdate(id){updateOffice();if(openId===id){const el=$('#resBody');if(el)el.innerHTML=md(live[id]||'')||'<p class="note">Sedang mulai menulis…</p>'}}
+function liveUpdate(id){updateOffice();if(openId===id){const el=$('#resBody');if(el)el.innerHTML=md(stripSlides(live[id]||''))||'<p class="note">Sedang mulai menulis…</p>'}}
 
 /* board & sheet */
 function render(){renderBoard();updateOffice();resumeBar();stats();if(openId)openSheet(openId,true)}
@@ -1020,7 +1076,8 @@ function openSheet(id,refresh){
   const t=tasks.find(x=>x.id===id);if(!t){closeSheet();return}
   if(refresh&&running.has(id))return;
   openId=id;const m=BY[t.div],st=eff(t);
-  const body=running.has(id)?(md(live[id]||'')||'<p class="note">Sedang mulai menulis…</p>'):(t.hasil?md(t.hasil):`<p class="note">${sample?'Belum dikerjakan. Tugas akan diproses saat gilirannya.':`AI belum aktif di tampilan ini, jadi tugas ini dicatat sebagai pengingat. <a href="${CLAUDE_URL}" target="_blank" rel="noopener">Buka versi Claude</a> agar karyawan mengerjakannya.`}</p>`);
+  const slides=!running.has(id)&&t.hasil?parseSlides(t.hasil):null;
+  const body=running.has(id)?(md(stripSlides(live[id]||''))||'<p class="note">Sedang mulai menulis…</p>'):(t.hasil?md(stripSlides(t.hasil))+(slides?'<div class="car" id="car"><p class="note">Menyiapkan slide…</p></div>':''):`<p class="note">${sample?'Belum dikerjakan. Tugas akan diproses saat gilirannya.':`AI belum aktif di tampilan ini, jadi tugas ini dicatat sebagai pengingat. <a href="${CLAUDE_URL}" target="_blank" rel="noopener">Buka versi Claude</a> agar karyawan mengerjakannya.`}</p>`);
   $('#sheet').innerHTML=`<button class="x" type="button" data-act="close" aria-label="Tutup">×</button>
   <div class="card" style="border:0;padding:0;margin:0"><span class="who2">${m?`<i style="background:${m.color}"></i>${esc(m.name)} · ${esc(m.role)}`:'Belum dibagi'} · ${esc({antrian:'Antrian',proses:'Dikerjakan',cek:'Siap dicek',selesai:'Selesai'}[st])}</span></div>
   <h2 id="shTitle" style="margin-top:6px">${esc(t.judul||'Tugas')}</h2>
@@ -1037,6 +1094,7 @@ function openSheet(id,refresh){
     ${!running.has(id)?`<button class="btn dang" type="button" data-act="del">${delArm?'Yakin hapus?':'Hapus'}</button>`:''}
   </div><p class="note" id="actNote"></p>`;
   $('#ov').classList.add('on');
+  if(slides)renderCarousel(slides,t);
 }
 function closeSheet(){openId=null;delArm=false;$('#ov').classList.remove('on')}
 async function toDrive(t){
@@ -1068,7 +1126,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&openId)closeSheet()
 $('#sheet').addEventListener('click',async e=>{
   const a=e.target.closest('[data-act]');if(!a)return;const act=a.dataset.act,t=tasks.find(x=>x.id===openId);
   if(act==='close')return closeSheet();if(!t)return;
-  if(act==='copy'){try{await navigator.clipboard.writeText(t.hasil);$('#actNote').textContent='Hasil disalin.'}catch{$('#actNote').textContent='Tidak bisa menyalin otomatis — blok teksnya lalu salin manual.'}}
+  if(act==='copy'){try{await navigator.clipboard.writeText(stripSlides(t.hasil));$('#actNote').textContent='Hasil disalin.'}catch{$('#actNote').textContent='Tidak bisa menyalin otomatis — blok teksnya lalu salin manual.'}}
   else if(act==='drive')toDrive(t);
   else if(act==='redo'){patch(t.id,{status:'antrian',hasil:'',err:'',drive:''});runEnabled=true;closeSheet();pump()}
   else if(act==='ok'){patch(t.id,{status:'selesai',done:Date.now()});if(!sample&&t.div)flash[t.div]=Date.now();closeSheet();render();setTimeout(updateOffice,2700)}
@@ -1100,6 +1158,183 @@ function aiChip(){
   resumeBar();if(openId)openSheet(openId,true);
 }
 
+
+/* ===== downloads helper ===== */
+let dlCap=null;cap('downloads').then(d=>{dlCap=d});
+async function offerFile(name,blob,noteEl){
+  if(dlCap){try{await dlCap.save({filename:name,data:blob});noteEl&&(noteEl.textContent='Tersimpan: '+name);return}catch(e){
+    if(e&&e.code==='declined'){noteEl&&(noteEl.textContent='Unduhan dibatalkan.');return}
+    if(e&&e.code==='rate_limited'){noteEl&&(noteEl.textContent='Tunggu sebentar lalu coba lagi.');return}}}
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),60000);noteEl&&(noteEl.textContent='Mengunduh '+name+'…')}
+  catch(e){noteEl&&(noteEl.textContent='Unduhan tidak tersedia di tampilan ini.')}
+}
+const fileSafe=s=>String(s||'klip').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').slice(0,60)||'klip';
+
+/* ===== carousel slides (Lukky Studio style) ===== */
+function parseSlides(txt){const m=String(txt||'').match(/```slides\s*([\s\S]*?)```/i);if(!m)return null;try{const a=JSON.parse(m[1]);return Array.isArray(a)&&a.length?a.slice(0,10).map(x=>({judul:String(x.judul||x.title||''),isi:String(x.isi||x.body||'')})):null}catch(e){return null}}
+function stripSlides(txt){return String(txt||'').replace(/```slides[\s\S]*?(```|$)/i,'').trim()}
+function wrapText(g,text,maxW){const words=String(text).split(/\s+/);const lines=[];let cur='';for(const w of words){const t=cur?cur+' '+w:w;if(g.measureText(t).width>maxW&&cur){lines.push(cur);cur=w}else cur=t}if(cur)lines.push(cur);return lines}
+function lCell(g,x,y,c,gap,dark){for(let r=0;r<3;r++)for(let k=0;k<3;k++){const L=k===0||r===2,luck=r===0&&k===2;g.fillStyle=luck?'#F26B4F':L?(dark?'#ffffff':'#1B2A4A'):(dark?'#33446A':'#E3E7EF');g.fillRect(x+k*(c+gap),y+r*(c+gap),c,c)}}
+async function slideCanvas(sl,i,n){
+  try{await Promise.all([document.fonts.load('800 80px Sora'),document.fonts.load('600 40px Sora')])}catch(e){}
+  const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+  const dark=i===0||i===n-1,NAVY='#1B2A4A',CORAL='#F26B4F';
+  g.fillStyle=dark?NAVY:'#F6F7FA';g.fillRect(0,0,W,H);
+  // grid motif
+  g.strokeStyle=dark?'rgba(255,255,255,.06)':'rgba(27,42,74,.06)';g.lineWidth=2;for(let x=0;x<=W;x+=90){g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke()}for(let y=0;y<=H;y+=90){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke()}
+  lCell(g,84,84,26,6,dark);
+  g.fillStyle=dark?'#fff':NAVY;g.font='800 34px Sora, Arial, sans-serif';g.fillText('LUKKY',196,118);g.font='600 18px Sora, Arial, sans-serif';g.fillText('S T U D I O',198,146);
+  g.fillStyle=CORAL;g.font='800 30px Sora, Arial, sans-serif';const num=`${i+1}/${n}`;g.fillText(num,W-84-g.measureText(num).width,124);
+  const maxW=W-168,tf=`800 ${dark?84:68}px Sora, Arial, sans-serif`,bf='600 42px Sora, Arial, sans-serif',tl=dark?100:82;
+  g.font=tf;const TL=wrapText(g,sl.judul,maxW).slice(0,5);g.font=bf;const BL=wrapText(g,sl.isi,maxW).slice(0,9);
+  const blockH=TL.length*tl+70+BL.length*60;let y=Math.max(300,260+((H-420)-blockH)/2)+tl*.8;
+  g.fillStyle=dark?'#fff':NAVY;g.font=tf;
+  for(const ln of TL){g.fillText(ln,84,y);y+=tl}
+  g.fillStyle=CORAL;g.fillRect(84,y-20,140,12);y+=50;
+  g.fillStyle=dark?'rgba(255,255,255,.85)':'#4A5875';g.font=bf;
+  for(const ln of BL){g.fillText(ln,84,y);y+=60}
+  if(i<n-1){g.fillStyle=dark?'#fff':NAVY;g.font='600 28px Sora, Arial, sans-serif';const sw='Geser →';g.fillText(sw,W-84-g.measureText(sw).width,H-84)}
+  g.fillStyle=dark?'rgba(255,255,255,.6)':'#8a93a8';g.font='600 26px Sora, Arial, sans-serif';g.fillText('template · dashboard · katalog',84,H-84);
+  return c;
+}
+async function renderCarousel(slides,t){
+  const box=$('#car');if(!box)return;
+  const canv=[];for(let i=0;i<slides.length;i++)canv.push(await slideCanvas(slides[i],i,slides.length));
+  if(!$('#car'))return;
+  box.innerHTML=`<b>Slide carousel siap posting (${slides.length})</b><div class="car-strip">${canv.map((c,i)=>`<img alt="Slide ${i+1}" src="${c.toDataURL('image/png')}">`).join('')}</div><div class="acts"><button class="btn pri" type="button" id="carZip">Unduh semua (ZIP)</button>${canv.map((c,i)=>`<button class="btn" type="button" data-sl="${i}">Slide ${i+1}</button>`).join('')}</div><p class="note" id="carNote"></p>`;
+  const blobOf=c=>new Promise(r=>c.toBlob(r,'image/png'));const base=fileSafe(t.judul||'carousel');
+  box.querySelectorAll('[data-sl]').forEach(b=>b.onclick=async()=>offerFile(`${base}-${+b.dataset.sl+1}.png`,await blobOf(canv[+b.dataset.sl]),$('#carNote')));
+  $('#carZip').onclick=async()=>{const n=$('#carNote');n.textContent='Menyiapkan ZIP…';
+    try{if(!window.JSZip)await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s)});
+      const z=new JSZip();for(let i=0;i<canv.length;i++)z.file(`${base}-${i+1}.png`,await blobOf(canv[i]));
+      await offerFile(base+'.zip',await z.generateAsync({type:'blob'}),n)}catch(e){n.textContent='ZIP gagal dibuat; unduh per slide.'}};
+}
+
+/* ===== Video clipper (Zuzu) ===== */
+const tsSec=s=>{const p=String(s).trim().replace(',','.').split(':').map(Number);if(p.some(isNaN))return NaN;return p.reduce((a,v)=>a*60+v,0)};
+const fmtT=x=>{x=Math.max(0,Math.round(x));const h=Math.floor(x/3600),m=Math.floor(x%3600/60),s=x%60;return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0')};
+function parseTranscript(txt){
+  const L=String(txt||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean),cues=[];
+  const srt=/^(\d{1,2}:)?\d{1,2}:\d{2}[.,]\d{1,3}\s*-->\s*((\d{1,2}:)?\d{1,2}:\d{2}[.,]\d{1,3})/;
+  const lab=/^\d+\s*(detik|menit|jam|seconds?|minutes?|hours?)(,?\s*\d+\s*(detik|menit|jam|seconds?|minutes?|hours?))*$/i;
+  let cur=null;
+  for(const l of L){
+    let m=l.match(srt);
+    if(m){const [a,b]=l.split('-->');cur={t:tsSec(a),end:tsSec(b),text:''};cues.push(cur);continue}
+    if(/^\d+$/.test(l)&&cur&&cur.end!=null&&cur.text)continue;
+    if(lab.test(l)||/^WEBVTT/i.test(l))continue;
+    m=l.match(/^(\d{1,2}:\d{2}(?::\d{2})?)\s*(.*)$/);
+    if(m){cur={t:tsSec(m[1]),text:m[2]||''};cues.push(cur);continue}
+    if(cur)cur.text=(cur.text?cur.text+' ':'')+l;
+  }
+  const out=cues.filter(c=>!isNaN(c.t)&&c.text.trim());out.sort((a,b)=>a.t-b.t);
+  out.forEach((c,i)=>{if(c.end==null||isNaN(c.end))c.end=i<out.length-1?out[i+1].t:c.t+4});
+  return out;
+}
+function parseManual(txt){return String(txt||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>{const m=l.match(/^(\d{1,2}:\d{2}(?::\d{2})?)\s*[-–]\s*(\d{1,2}:\d{2}(?::\d{2})?)\s*(.*)$/);return m?{mulai:tsSec(m[1]),selesai:tsSec(m[2]),judul:m[3]||'',caption:'',hashtag:[]}:null}).filter(Boolean)}
+function clipPrompt(cues,o){
+  let tr=cues.map(c=>`[${fmtT(c.t)}] ${c.text}`).join('\n');if(tr.length>80000)tr=tr.slice(0,80000)+'\n…(transkrip dipotong)';
+  return `Kamu Zuzu, Lucky Sprout bagian Video Clipper di Lukky Studio. Luki ikut program clipper resmi dan punya izin kreator untuk video ini.
+Sumber: ${o.link||'(tanpa link)'} · Kredit kreator: ${o.credit||'(tidak diisi)'} · Durasi video: ${fmtT(o.dur)} (${Math.round(o.dur)} detik).
+Pilih ${o.n} momen terbaik untuk klip vertikal ${o.min}–${o.max} detik yang paling berpotensi ditonton sampai habis dan dibagikan di Reels/TikTok/Shorts:
+- Klip berdiri sendiri (konteks jelas tanpa menonton video penuh), mulai tepat di kalimat yang kuat (hook dalam 3 detik pertama), berakhir di akhir kalimat/punchline.
+- Jangan tumpang tindih antar klip. Waktu harus di dalam 0–${Math.floor(o.dur)} detik.
+- Judul layar: maks 8 kata, bahasa sama dengan video, memancing rasa penasaran tanpa clickbait palsu.
+- Caption siap posting 1–3 kalimat + ajakan, wajib menyebut kredit kreator (${o.credit||'nama kreator'}), lalu 4–6 hashtag relevan.
+
+TRANSKRIP:
+${tr}
+
+Jawab HANYA JSON tanpa teks lain:
+{"klip":[{"mulai":<detik>,"selesai":<detik>,"judul":"...","caption":"...","hashtag":["#..."],"alasan":"1 kalimat"}]}`;
+}
+let actx=null;const srcMap=new WeakMap();
+async function renderClip(video,clip,o,cues,onProg){
+  const W=720,H=1280,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();
+  if(actx.state==='suspended')await actx.resume();
+  let node=srcMap.get(video);if(!node){node={src:actx.createMediaElementSource(video),dest:actx.createMediaStreamDestination()};node.src.connect(node.dest);srcMap.set(video,node)}
+  const stream=new MediaStream([...cv.captureStream(30).getVideoTracks(),...node.dest.stream.getAudioTracks()]);
+  const types=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1,mp4a.40.2','video/mp4;codecs=avc1,opus','video/mp4;codecs=avc1','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4'];
+  const mime=types.find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported(t))||'';
+  const rec=new MediaRecorder(stream,mime?{mimeType:mime,videoBitsPerSecond:4500000,audioBitsPerSecond:128000}:{});
+  const chunks=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+  const vw=video.videoWidth||1280,vh=video.videoHeight||720;
+  const draw=()=>{
+    const ct=video.currentTime;
+    g.fillStyle='#000';g.fillRect(0,0,W,H);
+    if(o.layout==='crop'){const sw=Math.min(vw,vh*9/16),sx=(vw-sw)/2;g.drawImage(video,sx,0,sw,vh,0,0,W,H)}
+    else{const sc=Math.max(W/vw,H/vh);try{g.filter='blur(22px) brightness(.55)'}catch(e){}g.drawImage(video,(W-vw*sc)/2,(H-vh*sc)/2,vw*sc,vh*sc);g.filter='none';g.fillStyle='rgba(0,0,0,.25)';g.fillRect(0,0,W,H);
+      const dh=W*vh/vw,dy=(H-dh)/2-40;g.drawImage(video,0,dy,W,dh)}
+    if(clip.judul){g.font='800 44px Sora, Arial, sans-serif';const lines=wrapText(g,clip.judul,W-120).slice(0,3),lh=54,bh=lines.length*lh+36,by=o.layout==='crop'?110:150;
+      g.fillStyle='rgba(255,255,255,.95)';const r=18;g.beginPath();g.moveTo(40+r,by);g.arcTo(W-40,by,W-40,by+bh,r);g.arcTo(W-40,by+bh,40,by+bh,r);g.arcTo(40,by+bh,40,by,r);g.arcTo(40,by,W-40,by,r);g.fill();
+      g.fillStyle='#111';g.textAlign='center';lines.forEach((l,i)=>g.fillText(l,W/2,by+52+i*lh));g.textAlign='left'}
+    if(o.sub){const cue=cues.find(c=>ct>=c.t&&ct<c.end);if(cue){g.font='800 40px Sora, Arial, sans-serif';const lines=wrapText(g,cue.text,W-110).slice(-3);let y=o.layout==='crop'?H-360:H-330;
+      g.textAlign='center';g.lineJoin='round';for(const l of lines){g.lineWidth=9;g.strokeStyle='rgba(0,0,0,.9)';g.strokeText(l,W/2,y);g.fillStyle='#fff';g.fillText(l,W/2,y);y+=52}g.textAlign='left'}}
+    if(o.credit){g.font='600 24px Sora, Arial, sans-serif';g.fillStyle='rgba(255,255,255,.8)';g.textAlign='center';g.fillText('Sumber: '+o.credit,W/2,H-70);g.textAlign='left'}
+  };
+  video.currentTime=clip.mulai;await new Promise(r=>{const f=()=>{video.removeEventListener('seeked',f);r()};video.addEventListener('seeked',f)});
+  draw();
+  const done=new Promise(r=>rec.onstop=r);
+  rec.start(500);video.muted=false;await video.play();
+  await new Promise(res=>{const tick=()=>{draw();onProg&&onProg(Math.min(1,(video.currentTime-clip.mulai)/(clip.selesai-clip.mulai)));
+    if(video.currentTime>=clip.selesai||video.ended){res();return}requestAnimationFrame(tick)};requestAnimationFrame(tick)});
+  video.pause();rec.stop();await done;
+  const type=(mime||'video/webm').split(';')[0];return{blob:new Blob(chunks,{type}),ext:type.includes('mp4')?'mp4':'webm',ready:/avc1/.test(mime)&&/mp4a/.test(mime),h264:/avc1/.test(mime)};
+}
+{
+  let busy=false;
+  $('#cGo').addEventListener('click',async()=>{
+    if(busy)return;const note=$('#cNote'),out=$('#cOut');
+    const file=$('#cFile').files[0],link=$('#cLink').value.trim(),credit=$('#cCredit').value.trim(),man=parseManual($('#cMan').value);
+    const cues=parseTranscript($('#cTr').value);
+    if(!$('#cOk').checked){note.textContent='Centang konfirmasi izin kreator dulu.';return}
+    if(!file){note.textContent='Pilih file video dulu.';return}
+    if(!man.length&&cues.length<5){note.textContent='Tempel transkrip dengan waktu (minimal beberapa baris), atau isi momen manual.';return}
+    if(!man.length&&!sample){note.textContent='AI tidak aktif di tampilan ini. Isi momen manual, atau buka versi Claude.';return}
+    if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){note.textContent='Browser ini belum bisa merender video. Coba Chrome atau Edge terbaru.';return}
+    busy=true;$('#cGo').disabled=true;
+    const video=document.createElement('video');video.src=URL.createObjectURL(file);video.playsInline=true;video.preload='auto';video.crossOrigin='anonymous';
+    try{await new Promise((r,j)=>{video.onloadedmetadata=r;video.onerror=()=>j(new Error('Video tidak bisa dibuka. Gunakan MP4 (H.264) atau WebM.'))})}catch(e){note.textContent=e.message;busy=false;$('#cGo').disabled=false;return}
+    const dur=video.duration,[mn,mx]=$('#cDur').value.split('-').map(Number),n=+$('#cN').value,layout=$('#cLay').value,sub=$('#cSub').checked&&cues.length>0;
+    const t={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),text:`Video clipper: ${link||file.name}${credit?' ('+credit+')':''}`,judul:'Klip video '+(credit||file.name).slice(0,40),div:'zuzu',prio:'normal',status:'proses',created:Date.now(),started:Date.now(),hasil:'',err:''};
+    tasks.unshift(t);save(t);running.add(t.id);render();
+    let clips=man;
+    try{
+      if(!clips.length){
+        note.textContent='Zuzu sedang membaca transkrip dan memilih momen terbaik…';WK.zuzu.mood='Mencari momen terbaik…';updateOffice();
+        const r=await sample(clipPrompt(cues,{link,credit,dur,n,min:mn,max:mx}),{modelTier:'default',cache:false});
+        const j=JSON.parse((r.text.match(/\{[\s\S]*\}/)||['{}'])[0]);clips=Array.isArray(j.klip)?j.klip:[];
+      }
+      clips=clips.map(c=>({...c,mulai:Math.max(0,+c.mulai||0),selesai:Math.min(dur,+c.selesai||0)})).filter(c=>c.selesai-c.mulai>=5).slice(0,5);
+      if(!clips.length)throw new Error('Tidak ada momen yang valid. Cek transkrip atau isi momen manual.');
+      out.innerHTML='';WK.zuzu.mood='';
+      const results=[];
+      for(let i=0;i<clips.length;i++){
+        const c=clips[i];if(c.selesai-c.mulai>90)c.selesai=c.mulai+90;
+        const card=document.createElement('div');card.className='ck';
+        card.innerHTML=`<div><div class="prog"><i></i></div></div><div><b>${esc(c.judul||'Klip '+(i+1))}</b><div class="meta">${fmtT(c.mulai)}–${fmtT(c.selesai)} · ${Math.round(c.selesai-c.mulai)} detik · merender…</div></div>`;
+        out.appendChild(card);
+        note.textContent=`Merender klip ${i+1} dari ${clips.length}… biarkan tab ini tetap terbuka.`;WK.zuzu.mood=`Render klip ${i+1}/${clips.length}…`;updateOffice();
+        const res=await renderClip(video,c,{layout,sub,credit},cues,p=>{const b=card.querySelector('.prog i');if(b)b.style.width=Math.round(p*100)+'%'});
+        const url=URL.createObjectURL(res.blob),fname=`${fileSafe(c.judul||'klip')}-${i+1}.${res.ext}`;
+        const cap=[c.caption||'',(c.hashtag||[]).join(' ')].filter(Boolean).join('\n\n');
+        card.innerHTML=`<video src="${url}" controls playsinline></video><div><b>${esc(c.judul||'Klip '+(i+1))}</b><div class="meta">${fmtT(c.mulai)}–${fmtT(c.selesai)} · ${Math.round(c.selesai-c.mulai)} detik · ${res.ext.toUpperCase()} · ${(res.blob.size/1048576).toFixed(1)} MB · ${res.ready?'H.264/AAC, siap unggah':res.h264?'H.264 (audio Opus): jika ditolak, simpan ulang lewat CapCut':'format WebM/VP9: konversi ke MP4 (mis. CapCut) sebelum unggah, atau pakai Chrome/Safari terbaru'}</div><textarea readonly aria-label="Caption klip ${i+1}">${esc(cap)}</textarea><div class="acts"><button class="btn pri" type="button" data-dl>Unduh video</button><button class="btn" type="button" data-cp>Salin caption</button></div><p class="note"></p></div>`;
+        const nn=card.querySelector('.note');
+        card.querySelector('[data-dl]').onclick=()=>offerFile(fname,res.blob,nn);
+        card.querySelector('[data-cp]').onclick=async()=>{try{await navigator.clipboard.writeText(cap);nn.textContent='Caption disalin.'}catch(e){nn.textContent='Blok teks caption lalu salin manual.'}};
+        results.push({...c,ext:res.ext,size:res.blob.size});
+      }
+      const hasil=`# Klip video siap tayang (${results.length})\n\nSumber: ${link||file.name}${credit?' · Kredit: '+credit:''}\n\n`+results.map((c,i)=>`## ${i+1}. ${c.judul||'Klip'}\n- Waktu: ${fmtT(c.mulai)}–${fmtT(c.selesai)} (${Math.round(c.selesai-c.mulai)} detik)\n${c.alasan?'- Alasan: '+c.alasan+'\n':''}- Caption: ${c.caption||'-'}\n- Hashtag: ${(c.hashtag||[]).join(' ')||'-'}`).join('\n\n')+`\n\n## Langkah berikutnya\n1. Unduh video dari panel Video Clipper (file video hanya tersimpan selama tab ini terbuka).\n2. Unggah ke Reels/TikTok/Shorts dengan caption di atas, sesuai aturan program clipper.`;
+      flash.zuzu=Date.now();setTimeout(updateOffice,2700);
+      patch(t.id,{status:'cek',hasil,done:Date.now(),sumber:['Video & transkrip yang diupload']});
+      note.textContent=`Selesai: ${results.length} klip siap diunduh. Video hanya tersimpan selama tab ini terbuka, jadi unduh sekarang.`;
+    }catch(e){
+      patch(t.id,{status:'cek',err:'Klip gagal dibuat: '+((e&&e.message)||'kesalahan tidak dikenal'),done:Date.now()});
+      note.textContent='Gagal: '+((e&&e.message)||'kesalahan tidak dikenal');
+    }finally{WK.zuzu.mood='';running.delete(t.id);busy=false;$('#cGo').disabled=false;render()}
+  });
+}
 
 /* fullscreen office */
 {
