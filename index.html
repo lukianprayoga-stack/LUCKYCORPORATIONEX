@@ -111,6 +111,28 @@ body.noscroll{overflow:hidden}
 .prof textarea{width:100%;min-height:96px;margin:8px 0}
 .ofa-set{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}.ofa-set label{display:block;margin-bottom:6px}
 .ofa-row{display:flex;gap:8px;flex-wrap:wrap}.ofa-row input{flex:1 1 260px;border:2px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;font-size:16px;min-height:44px}
+.pray{margin-top:28px;border-radius:20px;padding:clamp(14px,2.5vw,22px);background:linear-gradient(135deg,#0f5132,#1f8a5b);color:#f1fff6}
+.pray h2{margin:0;color:#fff}.pray p{margin:4px 0 0;color:rgba(241,255,246,.8)}.pray .note{color:rgba(241,255,246,.8)}
+.pray-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px 20px}
+.pray-next{font:600 18px Fredoka,sans-serif;background:rgba(255,255,255,.14);padding:8px 14px;border-radius:14px}
+.pray-next b{font-size:22px}
+.pray-times{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:14px 0}
+.pt{background:rgba(255,255,255,.1);border-radius:14px;padding:10px 8px;text-align:center}
+.pt span{display:block;font-size:13px;opacity:.85}.pt b{font:600 22px Fredoka,sans-serif;white-space:nowrap}
+.pt.minor{opacity:.65}.pt.next{background:#fff;color:#0f5132}.pt.now{outline:3px solid #ffd166}
+.pray-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.pray-ctl label{display:grid;gap:4px;font-size:13px;font-weight:600}
+.pray-ctl select,.pray-ctl input[type=text]{border:0;border-radius:10px;padding:9px 10px;font-size:16px;min-height:44px;background:#fff;color:#14331f}
+.pray-ctl input[type=text]{width:110px}
+.pray-ctl .btn.file{font-size:16px;font-weight:600;display:inline-flex}
+.pray .btn{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.3)}
+.pray .btn.pri{background:#ffd166;color:#14331f;border-color:transparent}
+.pray .btn[aria-pressed=true]{background:#fff;color:#0f5132}
+.btn.file{position:relative;overflow:hidden;display:inline-flex;align-items:center;cursor:pointer}.btn.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.adzan-toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:80;background:#0f5132;color:#fff;border-radius:16px;padding:12px 18px;box-shadow:0 12px 30px -10px rgba(0,0,0,.5);display:none;align-items:center;gap:12px;max-width:calc(100vw - 24px)}
+.adzan-toast.on{display:flex}.adzan-toast b{font:600 18px Fredoka,sans-serif}.adzan-toast button{background:#ffd166;border:0;border-radius:10px;min-height:40px;padding:0 12px;font-weight:700;color:#14331f}
+@media (max-width:820px){.pray-times{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:420px){.pray-times{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .clip{margin-top:28px;background:var(--surf);border-radius:20px;padding:clamp(14px,2.5vw,22px)}
 .clip-head h2{margin:0}.clip-head p{margin:4px 0 14px;color:var(--muted)}
 .clip-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px}
@@ -200,6 +222,7 @@ body.noscroll{overflow:hidden}
     <div class="rooms" role="group" aria-label="Pilih ruangan">
       <button type="button" data-room="toko" aria-pressed="true">Operasional Toko</button>
       <button type="button" data-room="studio" aria-pressed="false">Lukky Studio</button>
+      <button type="button" data-room="masjid" aria-pressed="false">Masjid</button>
       <button type="button" data-room="all" aria-pressed="false">Semua</button>
     </div>
     <div class="hint">Geser untuk memutar · scroll / cubit untuk zoom · ketuk pegawai</div>
@@ -207,10 +230,29 @@ body.noscroll{overflow:hidden}
 
   <div class="bhead">
     <h2>Papan tugas</h2>
-    <div class="seg" id="deptSeg" role="group" aria-label="Filter divisi"><button type="button" data-d="" aria-pressed="true">Semua</button><button type="button" data-d="toko" aria-pressed="false">Operasional Toko</button><button type="button" data-d="studio" aria-pressed="false">Lukky Studio</button></div>
+    <div class="seg" id="deptSeg" role="group" aria-label="Filter divisi"><button type="button" data-d="" aria-pressed="true">Semua</button><button type="button" data-d="toko" aria-pressed="false">Operasional Toko</button><button type="button" data-d="studio" aria-pressed="false">Lukky Studio</button><button type="button" data-d="ibadah" aria-pressed="false">Ibadah</button></div>
     <p id="filterTxt">Ketuk karyawan di kantor untuk melihat tugasnya saja.</p>
   </div>
   <div class="board" id="board"></div>
+
+  <section class="pray" id="pray" aria-labelledby="prayH">
+    <div class="pray-top">
+      <div><h2 id="prayH">Jadwal Sholat · Masjid Lucky</h2><p id="prayLoc">WIB · metode Kemenag</p></div>
+      <div class="pray-next" id="prayNext" aria-live="polite">Menghitung…</div>
+    </div>
+    <div class="pray-times" id="prayTimes"></div>
+    <div class="pray-ctl">
+      <label>Lokasi<select id="prayCity"></select></label>
+      <label class="pray-custom">Lintang<input id="prayLat" type="text" inputmode="decimal"></label>
+      <label class="pray-custom">Bujur<input id="prayLng" type="text" inputmode="decimal"></label>
+      <button class="btn pri" type="button" id="praySound">Aktifkan suara adzan</button>
+      <button class="btn" type="button" id="prayNotif">Izinkan notifikasi</button>
+      <button class="btn" type="button" id="prayTest">Tes adzan</button>
+      <label class="btn file">Unggah suara adzan<input id="prayAudio" type="file" accept="audio/*"></label>
+      <label class="btn file">Adzan Subuh (opsional)<input id="prayAudioSubuh" type="file" accept="audio/*"></label>
+    </div>
+    <p class="note" id="prayNote">Saat waktu sholat tiba, Bilal mengumandangkan adzan di masjid. Tekan "Aktifkan suara adzan" sekali agar suara bisa berbunyi otomatis. Notifikasi ke HP saat dashboard tertutup dikirim oleh tugas terjadwal Claude.</p>
+  </section>
 
   <section class="clip" id="clip" aria-labelledby="clipH">
     <div class="clip-head"><div><h2 id="clipH">Video Clipper · Zuzu</h2><p>Lukky Studio · ubah video panjang jadi klip 9:16 bersubtitle, siap diunggah ke Reels, TikTok, dan Shorts.</p></div></div>
@@ -254,6 +296,7 @@ body.noscroll{overflow:hidden}
   </details>
 </div>
 
+<div class="adzan-toast" id="adzanToast" role="status"><div><b id="adzanT">Waktunya sholat</b><div id="adzanS" style="font-size:14px;opacity:.85"></div></div><button type="button" id="adzanStop">Tutup</button></div>
 <div class="ov" id="ov" role="dialog" aria-modal="true" aria-labelledby="shTitle"><div class="sheet" id="sheet"></div></div>
 
 <script>
@@ -298,12 +341,15 @@ const TEAM=[
   kw:['pendapatan','rekap penjualan studio','laba','omzet studio','evaluasi harga','keuangan studio','target studio','harga jual']},
  {id:'zuzu',name:'Zuzu',role:'Video Clipper',dept:'studio',kind:'sprout',color:'#e0457b',scarf:'#ffffff',
   focus:'video clipper dan konten video pendek: memilih momen terbaik dari video panjang (program clipper resmi), naskah reels/shorts/TikTok 15–60 detik, judul hook, caption dan hashtag video',
-  kw:['clip','klip','clipper','reels','shorts','tiktok','video pendek','youtube','potong video']}
+  kw:['clip','klip','clipper','reels','shorts','tiktok','video pendek','youtube','potong video']},
+ {id:'bilal',name:'Bilal',role:'Muadzin',dept:'ibadah',color:'#1f8a5b',skin:'#c99a6e',hairC:'#1b1b1b',hair:'short',glasses:false,noTie:true,peci:true,shirt:'#fbfbf6',pants:'#2f6b4f',
+  focus:'muadzin dan pengingat ibadah tim: jadwal sholat WIB, pengingat sholat berjamaah, ide kultum singkat, doa harian, jadwal kajian/pengajian, persiapan Ramadhan',
+  kw:['sholat','salat','adzan','azan','kultum','doa','ibadah','kajian','masjid','ramadhan','puasa','zakat','jumat']}
 ];
 for(const m of TEAM){m.dept=m.dept||'toko';m.kind=m.kind||'human'}
 const BY=Object.fromEntries(TEAM.map(m=>[m.id,m]));
-const SX=15.6;
-const POS={zuzu:{x:15.6,z:5.3},pip:{x:12.6,z:-3.4},mochi:{x:18.6,z:-3.4},kiko:{x:12.4,z:2.6},tumi:{x:15.6,z:3.0},bobo:{x:18.8,z:2.6},lucky:{x:0,z:-3.6,big:1},ops:{x:-5.6,z:-3.4},sales:{x:5.6,z:-3.4},team:{x:-6.2,z:2.4},kreatif:{x:-2.1,z:2.8},laporan:{x:2.1,z:2.8},sistem:{x:6.2,z:2.4}};
+const SX=15.6,MX=-15.6;
+const POS={bilal:{x:-12.6,z:2.6},zuzu:{x:15.6,z:5.3},pip:{x:12.6,z:-3.4},mochi:{x:18.6,z:-3.4},kiko:{x:12.4,z:2.6},tumi:{x:15.6,z:3.0},bobo:{x:18.8,z:2.6},lucky:{x:0,z:-3.6,big:1},ops:{x:-5.6,z:-3.4},sales:{x:5.6,z:-3.4},team:{x:-6.2,z:2.4},kreatif:{x:-2.1,z:2.8},laporan:{x:2.1,z:2.8},sistem:{x:6.2,z:2.4}};
 const AISLE=-0.4,SPEED=1.7;
 const PRESETS=['Buat carousel Instagram Lukky Studio: 3 rumus Google Sheets untuk atur gaji','Ide 5 konten Instagram Lukky Studio minggu depan','Balasan DM untuk calon pembeli Template Lamaran','Briefing pagi tim, fokus kejar target weekend','Checklist opening & closing toko','Caption promo akhir pekan untuk Instagram','Jadwal shift minggu depan untuk 6 crew','Rencana kerja saya hari ini','Rekap laporan mingguan toko'];
 const COLS=[['antrian','Antrian'],['proses','Dikerjakan'],['cek','Siap dicek'],['selesai','Selesai']];
@@ -319,7 +365,7 @@ let tasks=[],sample=null,mcp=null,col=null,profRef=null,profile='',runEnabled=fa
 const live={},running=new Set(),routing=new Set(),transit=new Set(),flash={},chains={},WK={};
 let moved=false;
 
-const cxOf=id=>BY[id]&&BY[id].dept==='studio'?SX:0;
+const cxOf=id=>BY[id]&&BY[id].dept==='studio'?SX:BY[id]&&BY[id].dept==='ibadah'?MX:0;
 const spot=id=>{const p=POS[id],sp=BY[id]&&BY[id].kind==='sprout';return{x:p.x,z:p.z-(p.big?0.95:sp?0.72:0.85)}};
 const sidePt=id=>{const p=POS[id],sp=BY[id]&&BY[id].kind==='sprout',hw=p.big?2.0:sp?1.3:1.6;return{x:p.x+(p.x<=cxOf(id)?-hw:hw),z:spot(id).z}};
 
@@ -361,7 +407,7 @@ function deliver(div,onArrive){
 }
 function ambient(){
   if(document.hidden||reduce||!has3D)return;
-  const idle=TEAM.filter(m=>m.id!=='lucky'&&!WK[m.id].trip&&!tasks.some(t=>t.div===m.id&&['antrian','proses'].includes(eff(t))));
+  const idle=TEAM.filter(m=>m.id!=='lucky'&&m.dept!=='ibadah'&&!WK[m.id].trip&&!tasks.some(t=>t.div===m.id&&['antrian','proses'].includes(eff(t))));
   if(!idle.length||Math.random()<.35)return;
   const m=idle[Math.floor(Math.random()*idle.length)];
   const coffee=Math.random()<.6,st=m.dept==='studio';
@@ -380,12 +426,12 @@ function updateOffice(){
     if(done&&w.doneAt!==flash[m.id]){w.doneAt=flash[m.id];burst(m.id)}
     w.screen=!!job;
     let b;
-    if(w.mood)b=w.mood;
+    if(w.mood)b=w.mood;else if(w.flags.has('adzan'))b=window.__adzanLine||'Allāhu Akbar, Allāhu Akbar…';
     else if(job){const n=(live[job.id]||'').split(/\s+/).filter(Boolean).length;b=`${job.judul}${n?` · ${n} kata`:''}`}
     else if(thinking)b=`Membagi ${routing.size} tugas…`;
     else if(done)b='Selesai! Cek hasilnya';
     else if(queued)b=`${queued} tugas menunggu`;
-    else b=IDLE[m.id];
+    else b=m.id==='bilal'?(window.__prayIdle||'Menunggu waktu sholat'):IDLE[m.id];
     const el=document.getElementById('b-'+m.id);
     if(el){el.textContent=b;el.parentNode.className='lbl '+w.state+(filter===m.id?' sel':'')}
   }
@@ -416,9 +462,9 @@ function init3D(){
   /* lights */
   const hemi=new T.HemisphereLight(0xffffff,0xb8ad9e,0.72);scene.add(hemi);
   scene.add(new T.AmbientLight(0xffffff,0.16));
-  const sun=new T.DirectionalLight(0xfff1dc,0.95);sun.position.set(14,14,10);sun.castShadow=true;sun.target.position.set(6.3,0,0);scene.add(sun.target);
+  const sun=new T.DirectionalLight(0xfff1dc,0.95);sun.position.set(8,16,10);sun.castShadow=true;sun.target.position.set(0,0,0);scene.add(sun.target);
   sun.shadow.mapSize.set(2048,2048);
-  Object.assign(sun.shadow.camera,{left:-18,right:18,top:13,bottom:-13,near:1,far:50});sun.shadow.camera.updateProjectionMatrix();
+  Object.assign(sun.shadow.camera,{left:-24,right:24,top:14,bottom:-14,near:1,far:60});sun.shadow.camera.updateProjectionMatrix();
   sun.shadow.bias=-0.0006;scene.add(sun);
 
   /* helpers */
@@ -437,9 +483,11 @@ function init3D(){
   const bBack=brick.clone();bBack.needsUpdate=true;bBack.repeat.set(9,4.4);
   const bLeft=brick.clone();bLeft.needsUpdate=true;bLeft.repeat.set(6.5,4.4);
   const wallB=add(scene,new T.PlaneGeometry(18,4.4),new T.MeshStandardMaterial({map:bBack,roughness:.95}),0,2.2,-6.5,false);
-  const wallL=add(scene,new T.PlaneGeometry(13,4.4),new T.MeshStandardMaterial({map:bLeft,roughness:.95}),-9,2.2,0,false);wallL.rotation.y=Math.PI/2;
+  for(const [zc,len] of [[-3.75,5.5],[3.75,5.5]]){const bt=brick.clone();bt.needsUpdate=true;bt.repeat.set(len/2,4.4);const wl=add(scene,new T.PlaneGeometry(len,4.4),new T.MeshStandardMaterial({map:bt,roughness:.95}),-9,2.2,zc,false);wl.rotation.y=Math.PI/2}
+  {const bt=brick.clone();bt.needsUpdate=true;bt.repeat.set(1,1.8);const ln=add(scene,new T.PlaneGeometry(2,1.8),new T.MeshStandardMaterial({map:bt,roughness:.95}),-9,3.5,0,false);ln.rotation.y=Math.PI/2}
+  const doorFrame=mat('#6b4a2b');add(scene,BOX(.14,2.6,.12),doorFrame,-9,1.3,-1.0);add(scene,BOX(.14,2.6,.12),doorFrame,-9,1.3,1.0);add(scene,BOX(.14,.12,2.12),doorFrame,-9,2.6,0);
   add(scene,BOX(18,.16,.06),mat('#8d929e'),0,.08,-6.47,false);
-  const skL=add(scene,BOX(13,.16,.06),mat('#8d929e'),-8.97,.08,0,false);skL.rotation.y=Math.PI/2;
+  for(const zc of [-3.75,3.75]){const sk=add(scene,BOX(5.5,.16,.06),mat('#8d929e'),-8.97,.08,zc,false);sk.rotation.y=Math.PI/2}
   // windows
   const glass=new T.MeshStandardMaterial({color:'#dff1ff',emissive:new T.Color('#cfeaff'),emissiveIntensity:.9,roughness:.2});
   for(const wx of [-0.6,2.4,5.4]){
@@ -461,7 +509,7 @@ function init3D(){
     const hand=(a,l,wd,c)=>{g.strokeStyle=c;g.lineWidth=wd;g.lineCap='round';g.beginPath();g.moveTo(128,128);g.lineTo(128+Math.sin(a)*l,128-Math.cos(a)*l);g.stroke()};
     hand((d.getHours()%12+d.getMinutes()/60)/12*Math.PI*2,56,10,'#141a33');hand(d.getMinutes()/60*Math.PI*2,84,7,'#141a33');clockTex.needsUpdate=true}
   drawClock();setInterval(drawClock,30000);
-  const clk=add(scene,new T.PlaneGeometry(1.1,1.1),new T.MeshStandardMaterial({map:clockTex,transparent:true}),-8.95,3.0,-1.6,false);clk.rotation.y=Math.PI/2;
+  const clk=add(scene,new T.PlaneGeometry(1.1,1.1),new T.MeshStandardMaterial({map:clockTex,transparent:true}),-8.95,3.0,-3.2,false);clk.rotation.y=Math.PI/2;
   // rug
   add(scene,new T.CylinderGeometry(2.3,2.3,.012,48),mat('#3552d8',{roughness:.95}),0,.006,AISLE,false);
 
@@ -480,7 +528,7 @@ function init3D(){
   /* desks */
   const screens={};
   for(const m of TEAM){
-    if(m.kind==='sprout')continue;
+    if(m.kind==='sprout'||m.dept==='ibadah')continue;
     const p=POS[m.id],w=p.big?3.0:2.2,d=p.big?1.3:1.1,H=.78,top=p.big?'#a8774a':'#dfe1e6',side=p.big?'#8c5f37':'#cbced6';
     add(scene,BOX(w,.06,d),mat(top,{roughness:.55}),p.x,H-.03,p.z);
     add(scene,BOX(.5,H-.06,d-.1),mat(side,{roughness:.6}),p.x+w/2-.3,(H-.06)/2,p.z);
@@ -553,11 +601,69 @@ function init3D(){
     }
   }
 
+  /* ===== Masjid Lucky ===== */
+  {
+    const WHITE='#f6f3ea',GREEN='#1f8a5b',GOLD='#d4af37',WOOD='#7a4f2c';
+    const lawnTex=tex(512,512,(g,w,h)=>{g.fillStyle='#bfe0b4';g.fillRect(0,0,w,h);for(let i=0;i<2600;i++){g.fillStyle=`rgba(${60+Math.random()*40|0},${130+Math.random()*50|0},${60+Math.random()*30|0},.25)`;g.fillRect(Math.random()*w,Math.random()*h,2,5)}});
+    lawnTex.wrapS=lawnTex.wrapT=T.RepeatWrapping;lawnTex.repeat.set(4,4);
+    const lawn=add(scene,new T.PlaneGeometry(13,13),new T.MeshStandardMaterial({map:lawnTex,roughness:1}),-15.5,0,0,false);lawn.rotation.x=-Math.PI/2;
+    for(let i=0;i<6;i++){const st=add(scene,new T.CylinderGeometry(.32,.32,.03,18),mat('#d9d4c7'),-9.9-i*.95,.016,-.1+(i%2)*.18,false)}
+    add(scene,BOX(9,.3,6),mat('#efeae0',{roughness:.5}),MX,.15,-3.2);
+    add(scene,BOX(9,.08,.5),mat('#d9d2c2'),MX,.04,.05);
+    add(scene,BOX(9,3.3,.3),mat(WHITE,{roughness:.8}),MX,1.95,-6.05);
+    add(scene,BOX(.3,3.3,6),mat(WHITE,{roughness:.8}),MX-4.35,1.95,-3.2);
+    add(scene,BOX(.3,3.3,2.2),mat(WHITE,{roughness:.8}),MX+4.35,1.95,-5.0);
+    add(scene,BOX(9,.25,.32),mat(GREEN),MX,.42,-5.88);
+    const mihTex=tex(256,384,(g,w,h)=>{g.fillStyle='#f6f3ea';g.fillRect(0,0,w,h);g.fillStyle='#1f8a5b';g.beginPath();g.moveTo(28,h);g.lineTo(28,150);g.quadraticCurveTo(28,40,128,14);g.quadraticCurveTo(228,40,228,150);g.lineTo(228,h);g.fill();g.fillStyle='#0f5132';g.beginPath();g.moveTo(58,h);g.lineTo(58,160);g.quadraticCurveTo(58,70,128,46);g.quadraticCurveTo(198,70,198,160);g.lineTo(198,h);g.fill();g.strokeStyle='#d4af37';g.lineWidth=8;g.beginPath();g.moveTo(28,h);g.lineTo(28,150);g.quadraticCurveTo(28,40,128,14);g.quadraticCurveTo(228,40,228,150);g.lineTo(228,h);g.stroke()});
+    add(scene,new T.PlaneGeometry(1.7,2.55),new T.MeshStandardMaterial({map:mihTex,roughness:.7}),MX,1.58,-5.89,false);
+    const calTex=tex(1024,192,(g,w,h)=>{g.fillStyle='#0f5132';g.fillRect(0,0,w,h);g.strokeStyle='#d4af37';g.lineWidth=6;g.strokeRect(10,10,w-20,h-20);g.fillStyle='#ffffff';g.font='700 70px Fredoka, Arial, sans-serif';g.textAlign='center';g.fillText('MASJID LUCKY',w/2,122)});
+    add(scene,new T.PlaneGeometry(3.6,.68),new T.MeshStandardMaterial({map:calTex,roughness:.6}),MX,3.25,-5.89,false);
+    const rugTex=tex(512,384,(g,w,h)=>{const rows=6;for(let r=0;r<rows;r++){g.fillStyle=r%2?'#9c1d2a':'#b3263a';g.fillRect(0,r*h/rows,w,h/rows);g.strokeStyle='#e8c46a';g.lineWidth=3;for(let c=0;c<8;c++){const x=c*w/8;g.strokeRect(x+5,r*h/rows+5,w/8-10,h/rows-10);g.beginPath();g.moveTo(x+12,r*h/rows+18);g.quadraticCurveTo(x+w/16,r*h/rows+4,x+w/8-12,r*h/rows+18);g.stroke()}}});
+    add(scene,new T.PlaneGeometry(8.3,5.4),new T.MeshStandardMaterial({map:rugTex,roughness:.95}),MX,.305,-3.15,false).rotation.x=-Math.PI/2;
+    for(const x of [MX-4.2,MX-2.5,MX+2.5,MX+4.2]){add(scene,new T.CylinderGeometry(.17,.19,3.3,16),mat(WHITE,{roughness:.6}),x,1.95,-.35);add(scene,BOX(.5,.16,.5),mat(GREEN),x,3.52,-.35)}
+    add(scene,BOX(9.6,.35,6.6),mat('#f9f6ee',{roughness:.7}),MX,3.78,-3.2);
+    add(scene,BOX(9.7,.12,6.7),mat(GREEN),MX,3.62,-3.2);
+    add(scene,new T.CylinderGeometry(1.75,1.75,.6,40),mat(WHITE,{roughness:.6}),MX,4.25,-3.2);
+    for(let i=0;i<12;i++){const a=i/12*Math.PI*2;add(scene,BOX(.18,.32,.05),mat('#1d6b8a'),MX+Math.cos(a)*1.74,4.25,-3.2+Math.sin(a)*1.74,false).rotation.y=-a+Math.PI/2}
+    const dome=add(scene,new T.SphereGeometry(1.8,40,24,0,Math.PI*2,0,Math.PI/2),mat(GREEN,{roughness:.35,metalness:.15}),MX,4.55,-3.2);dome.scale.y=1.12;
+    add(scene,new T.CylinderGeometry(.05,.07,.5,10),mat(GOLD,{metalness:.6,roughness:.3}),MX,6.8,-3.2);add(scene,new T.SphereGeometry(.13,14,10),mat(GOLD,{metalness:.6,roughness:.3}),MX,7.08,-3.2);
+    const cres=add(scene,new T.TorusGeometry(.2,.045,8,24,Math.PI*1.4),mat(GOLD,{metalness:.6,roughness:.3}),MX,7.45,-3.2);cres.rotation.z=Math.PI*.8;
+    for(const x of [MX-4.3,MX+4.3]){add(scene,new T.CylinderGeometry(.32,.32,.35,20),mat(WHITE),x,4.13,-.45);add(scene,new T.SphereGeometry(.34,18,12,0,Math.PI*2,0,Math.PI/2),mat(GREEN,{roughness:.35}),x,4.3,-.45)}
+    // minaret
+    const MNx=-10.3,MNz=-5.6;
+    add(scene,BOX(1,1.1,1),mat(WHITE),MNx,.55,MNz);
+    add(scene,new T.CylinderGeometry(.36,.42,5.6,24),mat(WHITE,{roughness:.6}),MNx,3.9,MNz);
+    for(const y of [2.2,3.9,5.6])add(scene,new T.CylinderGeometry(.44,.44,.14,24),mat(GREEN),MNx,y,MNz);
+    add(scene,new T.CylinderGeometry(.66,.6,.16,28),mat(WHITE),MNx,6.78,MNz);
+    add(scene,new T.TorusGeometry(.63,.04,8,28),mat(GOLD,{metalness:.5}),MNx,7.05,MNz).rotation.x=Math.PI/2;
+    add(scene,new T.CylinderGeometry(.3,.3,.9,20),mat(WHITE),MNx,7.3,MNz);
+    add(scene,new T.ConeGeometry(.42,1.0,20),mat(GREEN,{roughness:.35}),MNx,8.25,MNz);
+    add(scene,new T.SphereGeometry(.08,10,8),mat(GOLD,{metalness:.6}),MNx,8.82,MNz);
+    for(let i=0;i<4;i++){const a=i*Math.PI/2;add(scene,BOX(.14,.4,.04),mat('#0f3a2a'),MNx+Math.cos(a)*.37,4.6,MNz+Math.sin(a)*.37,false).rotation.y=-a+Math.PI/2}
+    // mimbar
+    for(let i=0;i<3;i++)add(scene,BOX(.6,.22*(i+1),.42),mat(WOOD,{roughness:.6}),MX+1.6+i*.0,.3+.11*(i+1),-5.2+i*.42);
+    add(scene,BOX(.08,1.2,.08),mat(WOOD),MX+1.32,.9,-5.3);add(scene,BOX(.08,1.2,.08),mat(WOOD),MX+1.88,.9,-5.3);
+    // microphone for adzan
+    add(scene,new T.CylinderGeometry(.015,.015,1.35,8),mat('#2b2b2b'),MX+.55,.97,-5.0);add(scene,new T.CylinderGeometry(.12,.12,.03,16),mat('#2b2b2b'),MX+.55,.32,-5.0);add(scene,new T.SphereGeometry(.05,10,8),mat('#444'),MX+.55,1.67,-5.0);
+    // bedug
+    add(scene,BOX(.12,.9,.12),mat(WOOD),MX-3.75,.75,-.95);add(scene,BOX(.12,.9,.12),mat(WOOD),MX-2.95,.75,-.95);
+    const bd=add(scene,new T.CylinderGeometry(.42,.42,.9,24),mat('#8b5a2b',{roughness:.6}),MX-3.35,1.05,-.95);bd.rotation.z=Math.PI/2;
+    for(const sx of [-1,1])add(scene,new T.CylinderGeometry(.43,.43,.02,24),mat('#e6d3a8'),MX-3.35+sx*.46,1.05,-.95,false).rotation.z=Math.PI/2;
+    // wudhu
+    add(scene,BOX(.25,1.1,3.2),mat('#dfe6e9'),-21.4,.55,3.2);add(scene,BOX(.6,.35,3.2),mat('#b9c7cc'),-21.0,.35,3.2);
+    for(let i=0;i<4;i++){add(scene,new T.CylinderGeometry(.03,.03,.22,8),mat('#9aa3a8',{metalness:.6}),-21.15,.95,1.9+i*.85).rotation.z=Math.PI/2}
+    // takmir table (Bilal's post)
+    const P=POS.bilal;add(scene,BOX(1.5,.06,.7),mat(WOOD,{roughness:.5}),P.x,.72,P.z);for(const dx of [-1,1])for(const dz of [-1,1])add(scene,BOX(.05,.7,.05),mat(WOOD),P.x+dx*.68,.35,P.z+dz*.3);
+    const rh=add(scene,BOX(.36,.02,.26),mat('#0f5132'),P.x-.3,.82,P.z);rh.rotation.x=-.5;
+    add(scene,new T.CylinderGeometry(.09,.09,.02,20),mat('#ffffff'),P.x+.35,.77,P.z,false);
+    plant(-21.2,-6.0);plant(-21.2,6.0);plant(-9.9,6.0);
+  }
+
   /* workers */
   const pickables=[];
   function worker(m){
     const root=new T.Group(),body=new T.Group();root.add(body);
-    const skin=mat(m.skin,{roughness:.6}),shirt=mat(m.suit?'#25304f':'#f6f7fa',{roughness:.7}),pants=mat('#3b4054'),shoe=mat('#1f222b',{roughness:.4}),hair=mat(m.hairC,{roughness:.8}),dark=mat('#1a1d2a',{roughness:.4}),tieM=mat(m.color,{roughness:.5});
+    const skin=mat(m.skin,{roughness:.6}),shirt=mat(m.suit?'#25304f':(m.shirt||'#f6f7fa'),{roughness:.7}),pants=mat(m.pants||'#3b4054'),shoe=mat('#1f222b',{roughness:.4}),hair=mat(m.hairC,{roughness:.8}),dark=mat('#1a1d2a',{roughness:.4}),tieM=mat(m.color,{roughness:.5});
     const legs=[],arms=[];
     for(const s of [-1,1]){
       const lp=new T.Group();lp.position.set(s*.11,.62,0);body.add(lp);
@@ -570,8 +676,9 @@ function init3D(){
     add(body,new T.SphereGeometry(.235,20,10,0,Math.PI*2,0,Math.PI/2),shirt,0,1.23,0);
     if(m.suit)add(body,BOX(.17,.3,.02),mat('#f6f7fa'),0,1.08,.245);
     add(body,new T.CylinderGeometry(.085,.095,.12,14),skin,0,1.32,0);
-    add(body,BOX(.08,.065,.045),tieM,0,1.2,.25);
-    const tie=add(body,new T.ConeGeometry(.055,.36,4),tieM,0,1.0,.262);tie.rotation.set(Math.PI,Math.PI/4,0);tie.scale.set(1,1,.35);
+    if(!m.noTie){add(body,BOX(.08,.065,.045),tieM,0,1.2,.25);
+    const tie=add(body,new T.ConeGeometry(.055,.36,4),tieM,0,1.0,.262);tie.rotation.set(Math.PI,Math.PI/4,0);tie.scale.set(1,1,.35);}
+    else{for(let i=0;i<3;i++)add(body,new T.SphereGeometry(.018,8,6),mat('#c9b27a'),0,1.15-i*.1,.245,false);add(body,BOX(.1,.05,.02),mat('#e6e2d3'),0,1.2,.24,false)}
     for(const s of [-1,1]){
       const ap=new T.Group();ap.position.set(s*.31,1.2,0);ap.rotation.z=s*.1;body.add(ap);
       add(ap,new T.CylinderGeometry(.07,.062,.5,12),shirt,0,-.25,0);
@@ -589,6 +696,7 @@ function init3D(){
     const mouth=add(head,new T.TorusGeometry(.075,.016,8,18,Math.PI),dark,0,.2,.315,false);mouth.rotation.z=Math.PI;
     if(m.glasses){for(const s of [-1,1])add(head,new T.TorusGeometry(.1,.016,8,24),dark,s*.12,.39,.34,false);add(head,BOX(.06,.016,.016),dark,0,.4,.35,false)}
     const cap=(tl,rx)=>{const c=add(head,new T.SphereGeometry(.356,28,16,0,Math.PI*2,0,Math.PI*tl),hair,0,.33,0);c.rotation.x=rx;return c};
+    if(m.peci){const pc=add(head,new T.CylinderGeometry(.3,.33,.2,28),mat('#141414',{roughness:.5}),0,.66,-.02);pc.rotation.x=-.12}
     if(m.hair==='bald'){for(const s of [-1,1]){const t=add(head,new T.SphereGeometry(.13,14,12),hair,s*.3,.38,-.07);t.scale.set(.55,.85,1)}}
     else if(m.hair==='short')cap(.42,-.32);
     else if(m.hair==='side'){cap(.45,-.3);const f=add(head,new T.SphereGeometry(.14,14,12),hair,.14,.6,.2);f.scale.set(1.3,.5,.8)}
@@ -671,11 +779,11 @@ function init3D(){
   stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',end);
   stage.addEventListener('wheel',e=>{e.preventDefault();stopTour();cam.anim=null;cam.r=Math.min(36,Math.max(7,cam.r*(e.deltaY>0?1.08:.92)))},{passive:false});
   $('#camL').onclick=()=>{stopTour();cam.yaw-=.6};$('#camR').onclick=()=>{stopTour();cam.yaw+=.6};
-  const ROOMS={toko:{x:0,z:-.6,r:17.5},studio:{x:SX,z:-.6,r:13.5},all:{x:7.8,z:-.4,r:28}};let room='toko';
+  const ROOMS={toko:{x:0,z:-.6,r:17.5,yaw:.42,pitch:.58},studio:{x:SX,z:-.6,r:13.5,yaw:.42,pitch:.58},masjid:{x:MX+.6,z:-1.8,r:15.5,yaw:-.5,pitch:.5},all:{x:-.2,z:-.6,r:34,yaw:.05,pitch:.92}};let room='toko';
   function goRoom(k){room=k;window.__room=k;cam.anim=Object.assign({},ROOMS[k]);document.querySelectorAll('.rooms button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.room===k))}
   document.querySelectorAll('.rooms button').forEach(b=>b.onclick=()=>goRoom(b.dataset.room));
   window.__goRoom=goRoom;
-  $('#camReset').onclick=()=>{cam.yaw=.42;cam.pitch=.58;goRoom(room)};
+  $('#camReset').onclick=()=>{goRoom(room)};
   $('#camTour').onclick=()=>{cam.tour=!cam.tour;cam.base=cam.yaw;cam.t0=performance.now()/1000;$('#camTour').setAttribute('aria-pressed',cam.tour)};
 
   /* sky by time of day */
@@ -693,7 +801,7 @@ function init3D(){
     requestAnimationFrame(frame);
     if(document.hidden)return;
     const t=nowMs/1000,dt=Math.min(.05,t-last);last=t;
-    if(cam.anim){const k=Math.min(1,dt*3);target.x+=(cam.anim.x-target.x)*k;target.z+=(cam.anim.z-target.z)*k;cam.r+=(cam.anim.r-cam.r)*k;if(Math.abs(cam.anim.x-target.x)<.02&&Math.abs(cam.anim.r-cam.r)<.05)cam.anim=null}
+    if(cam.anim){const k=Math.min(1,dt*3);target.x+=(cam.anim.x-target.x)*k;target.z+=(cam.anim.z-target.z)*k;cam.r+=(cam.anim.r-cam.r)*k;if(cam.anim.yaw!=null){let dy=Math.atan2(Math.sin(cam.anim.yaw-cam.yaw),Math.cos(cam.anim.yaw-cam.yaw));cam.yaw+=dy*k;cam.base=cam.yaw-(cam.tour?.32*Math.sin((t-cam.t0)/6):0)}if(cam.anim.pitch!=null)cam.pitch+=(cam.anim.pitch-cam.pitch)*k;if(Math.abs(cam.anim.x-target.x)<.02&&Math.abs(cam.anim.r-cam.r)<.05)cam.anim=null}
     if(cam.tour&&!drag)cam.yaw=cam.base+.32*Math.sin((t-cam.t0)/6);
     placeCam();
     paperTimer+=dt;
@@ -707,7 +815,7 @@ function init3D(){
         else{w.x+=dx/dist*step;w.z+=dz/dist*step;w.face=Math.atan2(dx,dz);walking=true}
       }else if(!w.trip)w.face=0;
       const cur=r.root.rotation.y;let diff=w.face-cur;diff=Math.atan2(Math.sin(diff),Math.cos(diff));r.root.rotation.y=cur+diff*Math.min(1,dt*9);
-      r.root.position.set(w.x,0,w.z);
+      const onPlat=w.x>MX-4.5&&w.x<MX+4.5&&w.z>-6.2&&w.z<-.2;r.root.position.set(w.x,onPlat?.3:0,w.z);
       // pose
       const s=w.seed,st=w.state;
       if(r.kind==='sprout'){
@@ -737,19 +845,20 @@ function init3D(){
       else if(st==='done'){const ph=(Date.now()-flash[m.id])/1000;bodyY=Math.abs(Math.sin(ph*Math.PI*2.2))*.32*Math.max(0,1-ph/2.6);armL=armR=-2.7;headX=-.15}
       else{bodyY=Math.sin(t*2+s)*.008}
       if(w.flags.has('carry')||w.flags.has('coffee'))armR=walking?-.9:-1.0;
+      let armZ2=0;if(w.flags.has('adzan')&&!walking){armL=armR=-2.35+Math.sin(t*1.3)*.05;armZ2=.5;headX=-.12;headY=0;bodyY=0}
       r.legs[0].rotation.x=legL;r.legs[1].rotation.x=legR;
-      r.arms[0].rotation.x=armL;r.arms[1].rotation.x=armR;r.arms[1].rotation.z=.1+armZ;
+      r.arms[0].rotation.x=armL;r.arms[1].rotation.x=armR;r.arms[1].rotation.z=.1+armZ+armZ2;r.arms[0].rotation.z=-.1-armZ2;
       r.body.position.y=bodyY;
       r.head.rotation.set(headX,headY,headZ);
       r.eyes.scale.y=((t+s)%4.2)<.12?.12:1;
       r.paper.visible=w.flags.has('carry');r.cup.visible=w.flags.has('coffee');
       r.ring.visible=filter===m.id;
       // monitor glow
-      const sc=screens[m.id];if(w.screen){sc.mat.emissive.copy(sc.color);sc.mat.emissiveIntensity=.7+Math.sin(t*6)*.25}else{sc.mat.emissive.copy(sc.idle);sc.mat.emissiveIntensity=.5}
-      if(st==='working'&&paperTimer>.9&&Math.random()<.25)spawnPaper(m.id,.7);
+      const sc=screens[m.id];if(sc){if(w.screen){sc.mat.emissive.copy(sc.color);sc.mat.emissiveIntensity=.7+Math.sin(t*6)*.25}else{sc.mat.emissive.copy(sc.idle);sc.mat.emissiveIntensity=.5}}
+      if(st==='working'&&paperTimer>.9&&Math.random()<.25&&m.dept!=='ibadah')spawnPaper(m.id,.7);
       // label
       const el=lbls[m.id];
-      if(el){v.set(w.x,2.15+bodyY,w.z).project(camera);
+      if(el){v.set(w.x,2.15+bodyY+(onPlat?.3:0),w.z).project(camera);
         if(v.z>1){el.style.display='none'}else{el.style.display='';el.style.transform=`translate(${((v.x+1)/2*stage.clientWidth).toFixed(1)}px,${((1-v.y)/2*stage.clientHeight).toFixed(1)}px) translate(-50%,-100%)`}}
     }
     if(paperTimer>.9)paperTimer=0;
@@ -803,7 +912,7 @@ function remove(id){tasks=tasks.filter(t=>t.id!==id);if(col)col.doc(id).delete()
 /* AI */
 function routePrompt(t){return `Kamu Lucky, koordinator tim AI Lucky Corporation milik Luki. Ada dua divisi: Operasional Toko (Luki sebagai Store Head toko Eiger) dan Lukky Studio (bisnis produk digital Luki: template Google Sheets/Excel, dashboard, katalog, dijual lewat Instagram & WhatsApp). Pilih SATU karyawan paling tepat untuk perintah di bawah. Perintah tentang Lukky Studio, template digital, pembeli template, atau konten akun Lukky Studio masuk ke karyawan Lukky Studio.
 Karyawan:
-${TEAM.map(m=>`- ${m.id}: ${m.role} [${m.dept==='studio'?'Lukky Studio':'Operasional Toko'}] — ${m.focus}`).join('\n')}
+${TEAM.map(m=>`- ${m.id}: ${m.role} [${m.dept==='studio'?'Lukky Studio':m.dept==='ibadah'?'Ibadah':'Operasional Toko'}] — ${m.focus}`).join('\n')}
 
 Perintah: """${t.text}"""
 
@@ -979,7 +1088,20 @@ Aturan menulis:
 - Tutup dengan "## Langkah berikutnya" berisi 1–3 aksi singkat.
 - Maksimal sekitar 350 kata.${m.id==='mochi'||/carousel|slide|postingan|konten/i.test(t.text)?`
 - Jika hasilmu berupa konten carousel/postingan Instagram, akhiri jawaban dengan blok kode berlabel slides (tiga backtick lalu kata slides) berisi JSON array 3–7 objek {"judul":"maks 8 kata","isi":"maks 32 kata"}. Slide pertama = cover dengan hook, slide terakhir = ajakan (mis. DM "TEMPLATE"). Dashboard akan merendernya otomatis menjadi slide desain Lukky Studio.`:''}`}
-function workPrompt(t,ctx=''){const m=BY[t.div]||BY.lucky;if(m.dept==='studio')return studioPrompt(t,m,ctx);const today=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});return `Hari ini: ${today}.
+function ibadahPrompt(t,m,ctx){const today=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Jakarta'});return `Hari ini: ${today} (WIB).
+Kamu adalah ${m.name}, muadzin dan pengingat ibadah di Lucky Corporation, perusahaan milik Luki (Store Head toko Eiger dan pemilik Lukky Studio). Fokusmu: ${m.focus}.
+${ctx?`Jadwal sholat hari ini (WIB, metode Kemenag, perkiraan perhitungan): ${ctx}
+`:''}
+Tugas (prioritas ${t.prio}):
+${t.text}
+
+Aturan menulis:
+- Bahasa Indonesia yang santun, hangat, dan ringkas. Baris pertama judul diawali "# ".
+- Untuk ayat atau hadits, sebutkan sumbernya (nama surah dan nomor ayat, atau perawi hadits) dan jangan mengarang redaksi atau nomor. Jika ragu, sampaikan maknanya secara umum tanpa kutipan.
+- Untuk pertanyaan hukum fiqih yang rinci atau ada perbedaan pendapat, jelaskan secara umum dan sarankan bertanya kepada ustadz atau ulama setempat.
+- Jadwal sholat di atas hasil perhitungan; untuk kepastian, sarankan merujuk jadwal resmi Kemenag atau masjid setempat.
+- Tutup dengan "## Langkah berikutnya" berisi 1–3 aksi singkat. Maksimal sekitar 300 kata.`}
+function workPrompt(t,ctx=''){const m=BY[t.div]||BY.lucky;if(m.dept==='studio')return studioPrompt(t,m,ctx);if(m.dept==='ibadah')return ibadahPrompt(t,m,ctx);const today=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});return `Hari ini: ${today}.
 Kamu adalah ${m.name}, karyawan AI bagian ${m.role} di Lucky Corporation — tim AI pribadi seorang Store Head toko ritel perlengkapan outdoor Eiger. Pekerjaan toko sangat dinamis, jadi hasilmu harus cepat dipakai.
 Fokusmu: ${m.focus}.
 
@@ -1023,19 +1145,20 @@ async function work(id){
   if(WK[t.div]&&WK[t.div].trip)await WK[t.div].trip.catch(()=>{});
   updateOffice();
   try{
-    const used=new Set();let ctx='',ofaErr='';const isStudio=(BY[t.div]||{}).dept==='studio';
+    const used=new Set();let ctx='',ofaErr='';const isStudio=(BY[t.div]||{}).dept==='studio',isIbadah=(BY[t.div]||{}).dept==='ibadah';
     if(isStudio){
       await ensureStudio();
       if(mcp&&stSheet){const w=WK[t.div];if(w){w.mood='Membuka catatan penjualan…';updateOffice()}
         try{ctx=await studioContext(used)}catch(e){ofaErr='Catatan penjualan tidak terbaca: '+((e&&e.message)||'gagal')}
         finally{if(w){w.mood='';updateOffice()}}}
-    }else if(await ensureOfa()){
+    }else if(isIbadah){ctx=window.__prayToday||''}
+    else if(await ensureOfa()){
       const w=WK[t.div];if(w){w.mood='Membuka data OFA Hub…';updateOffice()}
       try{const c=await ofaContext(t.div,used);ctx=c.text;if(c.errs.length&&!c.text)ofaErr='Data OFA tidak terbaca: '+c.errs[0]}
       finally{if(w){w.mood='';updateOffice()}}
     }
     const opts={modelTier:'default',cache:false,onText:({text})=>{live[id]=text;liveUpdate(id)}};
-    if(!isStudio&&ofaReady()&&!ofaErr)opts.tools=[ofaTool(t.div,used)];
+    if(!isStudio&&!isIbadah&&ofaReady()&&!ofaErr)opts.tools=[ofaTool(t.div,used)];
     let r;
     try{r=await sample(workPrompt(t,ctx),opts)}
     catch(e){
@@ -1436,6 +1559,110 @@ async function runOpus(){
   });
 }
 
+function prayTimes(y,m,d,lat,lng,tz){
+  const dtr=x=>x*Math.PI/180,rtd=x=>x*180/Math.PI,fixA=a=>((a%360)+360)%360,fixH=h=>((h%24)+24)%24;
+  const jdBase=(()=>{if(m<=2){y-=1;m+=12}const A=Math.floor(y/100),B=2-A+Math.floor(A/4);return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5})()-lng/(15*24);
+  const sun=t=>{const D=jdBase+t-2451545;const g=fixA(357.529+.98560028*D),q=fixA(280.459+.98564736*D),L=fixA(q+1.915*Math.sin(dtr(g))+.02*Math.sin(dtr(2*g))),e=23.439-.00000036*D;
+    const RA=rtd(Math.atan2(Math.cos(dtr(e))*Math.sin(dtr(L)),Math.cos(dtr(L))))/15;return{decl:rtd(Math.asin(Math.sin(dtr(e))*Math.sin(dtr(L)))),eqt:q/15-fixH(RA)}};
+  const mid=t=>fixH(12-sun(t).eqt);
+  const ang=(a,t,ccw)=>{const dc=sun(t).decl,n=mid(t),x=rtd(Math.acos((-Math.sin(dtr(a))-Math.sin(dtr(dc))*Math.sin(dtr(lat)))/(Math.cos(dtr(dc))*Math.cos(dtr(lat)))))/15;return n+(ccw?-x:x)};
+  const asr=(f,t)=>{const dc=sun(t).decl;return ang(-rtd(Math.atan(1/(f+Math.tan(dtr(Math.abs(lat-dc)))))),t)};
+  let h={subuh:5,terbit:6,dzuhur:12,ashar:13,maghrib:18,isya:18};
+  for(let i=0;i<2;i++){const t=k=>h[k]/24;h={subuh:ang(20,t('subuh'),true),terbit:ang(.833,t('terbit'),true),dzuhur:mid(t('dzuhur')),ashar:asr(1,t('ashar')),maghrib:ang(.833,t('maghrib')),isya:ang(18,t('isya'))}}
+  const adj=tz-lng/15,o={};for(const k in h)o[k]=h[k]+adj;
+  for(const k of ['subuh','dzuhur','ashar','maghrib','isya'])o[k]+=2/60;o.terbit-=2/60;o.imsak=o.subuh-10/60;
+  return o;
+}
+
+/* ===== Jadwal sholat & adzan (Masjid Lucky) ===== */
+let ibRef=null;
+{
+  const CITIES=[['Solo Baru, Sukoharjo',-7.604,110.819],['Surakarta',-7.5755,110.8243],['Yogyakarta',-7.7956,110.3695],['Semarang',-6.9667,110.4167],['Jakarta',-6.2088,106.8456],['Bandung',-6.9175,107.6191],['Surabaya',-7.2575,112.7521],['Lokasi lain (isi koordinat)',null,null]];
+  const NAMES={imsak:'Imsak',subuh:'Subuh',terbit:'Terbit',dzuhur:'Dzuhur',ashar:'Ashar',maghrib:'Maghrib',isya:'Isya'};
+  const ORDER=['imsak','subuh','terbit','dzuhur','ashar','maghrib','isya'],FARD=['subuh','dzuhur','ashar','maghrib','isya'];
+  const LINES=['Allāhu Akbar, Allāhu Akbar','Asyhadu an lā ilāha illallāh','Asyhadu anna Muḥammadar rasūlullāh','Ḥayya ‘alaṣ-ṣalāh','Ḥayya ‘alal-falāḥ','Allāhu Akbar, Allāhu Akbar','Lā ilāha illallāh'];
+  let cfg={city:0,lat:-7.604,lng:110.819};
+  const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+  try{const c=JSON.parse(ls.get('lucky-ibadah')||'null');if(c&&isFinite(c.lat))cfg=c}catch(e){}
+  const wib=()=>{const d=new Date(Date.now()+7*3600e3);return{y:d.getUTCFullYear(),m:d.getUTCMonth()+1,d:d.getUTCDate(),min:d.getUTCHours()*60+d.getUTCMinutes()+d.getUTCSeconds()/60}};
+  const hm=h=>{let mm=Math.round(h*60);mm=((mm%1440)+1440)%1440;return String(Math.floor(mm/60)).padStart(2,'0')+':'+String(mm%60).padStart(2,'0')};
+  const toMin=h=>Math.round(h*60);
+  const cityName=()=>cfg.city<CITIES.length-1?CITIES[cfg.city][0]:`${(+cfg.lat).toFixed(3)}, ${(+cfg.lng).toFixed(3)}`;
+  function today(){const n=wib();return{n,t:prayTimes(n.y,n.m,n.d,+cfg.lat,+cfg.lng,7)}}
+  const sel=$('#prayCity');sel.innerHTML=CITIES.map((c,i)=>`<option value="${i}">${esc(c[0])}</option>`).join('');
+  function syncInputs(){sel.value=cfg.city;$('#prayLat').value=cfg.lat;$('#prayLng').value=cfg.lng;document.querySelectorAll('.pray-custom').forEach(x=>x.style.display=cfg.city==CITIES.length-1?'':'none')}
+  function saveCfg(){ls.set('lucky-ibadah',JSON.stringify(cfg));if(ibRef)ibRef.set({...cfg,updated:Date.now()}).catch(()=>{});draw()}
+  window.applyPraySettings=d=>{if(d&&isFinite(d.lat)&&isFinite(d.lng)){cfg={city:+d.city||0,lat:+d.lat,lng:+d.lng};syncInputs();draw()}};
+  sel.onchange=()=>{cfg.city=+sel.value;const c=CITIES[cfg.city];if(c[1]!=null){cfg.lat=c[1];cfg.lng=c[2]}syncInputs();saveCfg()};
+  for(const id of ['#prayLat','#prayLng'])$(id).onchange=()=>{const la=parseFloat($('#prayLat').value),lo=parseFloat($('#prayLng').value);if(isFinite(la)&&isFinite(lo)&&Math.abs(la)<=60&&Math.abs(lo)<=180){cfg.lat=la;cfg.lng=lo;saveCfg()}else $('#prayNote').textContent='Koordinat tidak valid. Contoh Solo Baru: -7.604 dan 110.819.'};
+  function draw(){
+    const {n,t}=today();let next=null;
+    for(const k of FARD){if(toMin(t[k])>n.min){next=k;break}}
+    let nextLabel,nextMin;
+    if(next){nextMin=toMin(t[next])-n.min;nextLabel=next}else{const tm=new Date(Date.UTC(n.y,n.m-1,n.d+1));const t2=prayTimes(tm.getUTCFullYear(),tm.getUTCMonth()+1,tm.getUTCDate(),+cfg.lat,+cfg.lng,7);nextLabel='subuh';nextMin=1440-n.min+toMin(t2.subuh);t.__nextTime=t2.subuh}
+    const cur=FARD.filter(k=>toMin(t[k])<=n.min).pop();
+    $('#prayTimes').innerHTML=ORDER.map(k=>`<div class="pt${k==='imsak'||k==='terbit'?' minor':''}${k===nextLabel&&next?' next':''}${k===cur&&n.min-toMin(t[k])<15?' now':''}"><span>${NAMES[k]}</span><b>${hm(t[k])}</b></div>`).join('');
+    const hh=Math.floor(nextMin/60),mm=Math.floor(nextMin%60);
+    const nt=next?hm(t[next]):hm(t.__nextTime);
+    $('#prayNext').innerHTML=`Berikutnya <b>${NAMES[nextLabel]} ${nt}</b> WIB · ${hh?hh+' jam ':''}${mm} menit lagi`;
+    $('#prayLoc').textContent=`${cityName()} · WIB (UTC+7) · metode Kemenag, perkiraan hitungan`;
+    window.__prayIdle=`Menuju ${NAMES[nextLabel]} ${nt} WIB`;
+    window.__prayToday=ORDER.map(k=>`${NAMES[k]} ${hm(t[k])}`).join(', ')+` (lokasi ${cityName()})`;
+    return{n,t};
+  }
+  /* audio */
+  let pctx=null,bufs={},playing=null;
+  const idb=()=>new Promise((res,rej)=>{try{const r=indexedDB.open('lucky-adzan',1);r.onupgradeneeded=()=>r.result.createObjectStore('a');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});
+  async function idbPut(k,v){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction('a','readwrite');tx.objectStore('a').put(v,k);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
+  async function idbGet(k){try{const db=await idb();return await new Promise(res=>{const q=db.transaction('a').objectStore('a').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)})}catch(e){return null}}
+  async function unlock(){try{if(!pctx)pctx=new (window.AudioContext||window.webkitAudioContext)();if(pctx.state==='suspended')await pctx.resume();const o=pctx.createOscillator(),g=pctx.createGain();g.gain.value=.0001;o.connect(g);g.connect(pctx.destination);o.start();o.stop(pctx.currentTime+.05);return pctx.state==='running'}catch(e){return false}}
+  async function loadBuf(key){if(bufs[key])return bufs[key];const b=await idbGet(key);if(!b||!pctx)return null;try{bufs[key]=await pctx.decodeAudioData(await b.arrayBuffer());return bufs[key]}catch(e){return null}}
+  function chime(){const t0=pctx.currentTime;[[659,0],[880,.6],[988,1.2],[659,2.4],[880,3.0],[988,3.6]].forEach(([f,dt])=>{const o=pctx.createOscillator(),g=pctx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t0+dt);g.gain.exponentialRampToValueAtTime(.35,t0+dt+.02);g.gain.exponentialRampToValueAtTime(.0001,t0+dt+1.8);o.connect(g);g.connect(pctx.destination);o.start(t0+dt);o.stop(t0+dt+2)});return 5.5}
+  async function play(prayer){stopAudio();if(!pctx||pctx.state!=='running')return 0;
+    const buf=(prayer==='subuh'&&await loadBuf('subuh'))||await loadBuf('adzan');
+    if(!buf)return chime();
+    const src=pctx.createBufferSource();src.buffer=buf;src.connect(pctx.destination);src.start();playing=src;return Math.min(buf.duration,330)}
+  function stopAudio(){try{playing&&playing.stop()}catch(e){}playing=null}
+  /* notification */
+  async function notify(title,body){
+    try{if(!('Notification' in window)||Notification.permission!=='granted')return;
+      const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration().catch(()=>null);
+      const opt={body,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'lucky-adzan',renotify:true};
+      if(reg&&reg.showNotification)await reg.showNotification(title,opt);else new Notification(title,opt)}catch(e){}
+  }
+  /* adzan event */
+  let adzanBusy=false;
+  async function adzan(prayer,time,test){
+    if(adzanBusy)return;adzanBusy=true;
+    const title=test?'Tes adzan · Masjid Lucky':`Waktunya sholat ${NAMES[prayer]}`,body=`${time} WIB · ${cityName()} · Bilal mengumandangkan adzan`;
+    $('#adzanT').textContent=title;$('#adzanS').textContent=body;$('#adzanToast').classList.add('on');
+    notify(title,body);
+    const dur=await play(prayer)||0;const total=Math.max(dur,test?20:150);
+    const lines=prayer==='subuh'?[...LINES.slice(0,5),'Aṣ-ṣalātu khairum minan-naum',...LINES.slice(5)]:LINES;
+    let li=0;window.__adzanLine=lines[0];const lt=setInterval(()=>{li=(li+1)%lines.length;window.__adzanLine=lines[li];updateOffice()},Math.max(4000,total*1000/lines.length));
+    const w=WK.bilal;
+    const run=(w.trip||Promise.resolve()).then(async()=>{
+      w.mood='Menuju mihrab untuk adzan…';updateOffice();
+      const s0=spot('bilal');await walk('bilal',[{x:s0.x,z:.9},{x:MX,z:.9},{x:MX,z:-4.75}]);
+      w.mood='';w.flags.add('adzan');updateOffice();
+      await sleep(total*1000);
+      w.flags.delete('adzan');w.mood=test?'Tes adzan selesai':`Silakan sholat ${NAMES[prayer]} 🙏`;updateOffice();
+      await walk('bilal',[{x:MX,z:.9},{x:s0.x,z:.9},s0]);
+      w.mood='';updateOffice();
+    });
+    const tp=run.catch(()=>{}).then(()=>{if(w.trip===tp)w.trip=null;clearInterval(lt);adzanBusy=false;setTimeout(()=>$('#adzanToast').classList.remove('on'),8000)});w.trip=tp;
+  }
+  $('#adzanStop').onclick=()=>{stopAudio();$('#adzanToast').classList.remove('on')};
+  /* buttons */
+  $('#praySound').onclick=async()=>{const ok=await unlock();$('#praySound').setAttribute('aria-pressed',ok);$('#praySound').textContent=ok?'Suara adzan aktif':'Suara tidak bisa diaktifkan';$('#prayNote').textContent=ok?'Suara adzan aktif selama halaman ini terbuka. Unggah file adzan (MP3) agar yang berbunyi suara adzan; tanpa file, yang berbunyi nada pengingat.':'Browser menolak memutar suara di tampilan ini.'};
+  $('#prayNotif').onclick=async()=>{try{if(!('Notification' in window))throw 0;const r=await Notification.requestPermission();$('#prayNotif').setAttribute('aria-pressed',r==='granted');$('#prayNotif').textContent=r==='granted'?'Notifikasi aktif':'Notifikasi ditolak'}catch(e){$('#prayNotif').textContent='Notifikasi tidak tersedia di sini';$('#prayNote').textContent='Tampilan ini tidak bisa memunculkan notifikasi browser. Pakai aplikasi HP (versi GitHub) atau notifikasi dari tugas terjadwal Claude.'}};
+  $('#prayTest').onclick=async()=>{await unlock();$('#praySound').setAttribute('aria-pressed',true);$('#praySound').textContent='Suara adzan aktif';const {t}=draw();const k=FARD.find(x=>toMin(t[x])>wib().min)||'subuh';adzan(k,hm(t[k]),true);if(window.__goRoom)window.__goRoom('masjid')};
+  for(const [id,key] of [['#prayAudio','adzan'],['#prayAudioSubuh','subuh']])$(id).onchange=async e=>{const f=e.target.files[0];if(!f)return;try{await idbPut(key,f);delete bufs[key];$('#prayNote').textContent=`Suara ${key==='subuh'?'adzan Subuh':'adzan'} tersimpan di perangkat ini (${(f.size/1048576).toFixed(1)} MB).`}catch(err){$('#prayNote').textContent='Gagal menyimpan suara di perangkat ini.'}};
+  /* scheduler */
+  function tick(){const {n,t}=draw();for(const k of FARD){const tm=toMin(t[k]),key=`${n.y}-${n.m}-${n.d}-${k}`;if(n.min>=tm&&n.min<tm+3&&ls.get('lucky-adzan-fired')!==key&&!tick.done?.[key]){tick.done=tick.done||{};tick.done[key]=1;ls.set('lucky-adzan-fired',key);adzan(k,hm(t[k]))}}}
+  syncInputs();tick();setInterval(tick,10000);
+}
+
 /* ===== install on phone (PWA) ===== */
 {
   const GH='https://lukianprayoga-stack.github.io/LUCKYCORPORATIONEX/';
@@ -1489,8 +1716,8 @@ async function runOpus(){
 /* boot */
 buildLabels();
 {const opt=m=>`<option value="${m.id}">${esc(m.name)} · ${esc(m.role)}</option>`;
-$('#div').insertAdjacentHTML('beforeend',`<optgroup label="Operasional Toko">${TEAM.filter(m=>m.dept==='toko').map(opt).join('')}</optgroup><optgroup label="Lukky Studio (Lucky Sprouts)">${TEAM.filter(m=>m.dept==='studio').map(opt).join('')}</optgroup>`)}
-document.querySelectorAll('#deptSeg button').forEach(b=>b.onclick=()=>{deptF=b.dataset.d;filter=null;document.querySelectorAll('#deptSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderBoard();updateOffice();if(window.__goRoom&&deptF)window.__goRoom(deptF)});
+$('#div').insertAdjacentHTML('beforeend',`<optgroup label="Operasional Toko">${TEAM.filter(m=>m.dept==='toko').map(opt).join('')}</optgroup><optgroup label="Lukky Studio (Lucky Sprouts)">${TEAM.filter(m=>m.dept==='studio').map(opt).join('')}</optgroup><optgroup label="Ibadah">${TEAM.filter(m=>m.dept==='ibadah').map(opt).join('')}</optgroup>`)}
+document.querySelectorAll('#deptSeg button').forEach(b=>b.onclick=()=>{deptF=b.dataset.d;filter=null;document.querySelectorAll('#deptSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderBoard();updateOffice();if(window.__goRoom&&deptF)window.__goRoom(deptF==='ibadah'?'masjid':deptF)});
 $('#stSave').addEventListener('click',async()=>{
   const n=$('#stNote'),raw=$('#stSheet').value.trim(),id=raw?parseSheetId(raw):'';
   if(raw&&!id){n.textContent='Link atau ID spreadsheet tidak dikenali.';return}
@@ -1520,6 +1747,7 @@ cap('db').then(db=>{
     tasks.sort((a,b)=>b.created-a.created);render();if(!window.__opusResumed&&!snap.metadata.fromCache){window.__opusResumed=1;setTimeout(()=>{if(typeof resumeOpus==='function')resumeOpus()},800)}
   },()=>{clearTimeout(tm);chip('#cDb','warn','Penyimpanan terputus')});
   profRef.get().then(s=>{if(s.exists){profile=String(s.data().text||'');$('#prof').value=profile}}).catch(()=>{});
+  ibRef=db.doc('settings/ibadah');ibRef.get().then(s=>{if(s.exists&&window.applyPraySettings)applyPraySettings(s.data())}).catch(()=>{});
   stRef=db.doc('settings/studio');
   stRef.get().then(s=>{if(s.exists){const d=s.data();stProfile=String(d.text||'');stSheet=String(d.sheetId||'');$('#stProf').value=stProfile;$('#stSheet').value=stSheet?'https://docs.google.com/spreadsheets/d/'+stSheet:''}}).catch(()=>{});
   ofaRef=db.doc('settings/ofa');
