@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lucky Corporation HQ</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2346d8">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lucky Corp">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Sora:wght@600;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap" rel="stylesheet">
@@ -31,6 +40,9 @@ button{cursor:pointer}
 .hello{color:var(--muted);margin:4px 0 0}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:5px 11px;border-radius:99px;background:var(--surf);border:1px solid var(--line);white-space:nowrap}
+.brand{display:flex;align-items:center;gap:12px}.brand img{border-radius:12px;flex:none;box-shadow:0 6px 14px -8px rgba(20,33,138,.6)}
+.chip.inst{cursor:pointer;background:#2346d8;color:#fff;border-color:transparent;font-weight:700;min-height:32px}
+.inst-steps{margin:10px 0 0;padding-left:20px}.inst-steps li{margin:6px 0}
 .chip i{width:8px;height:8px;border-radius:50%;background:#9aa0b8}
 .chip.ok i{background:#1fae6b}.chip.warn i{background:#f2a516}
 .cmd{display:grid;grid-template-columns:minmax(0,1fr) 200px 140px auto;gap:10px}
@@ -149,10 +161,11 @@ body.noscroll{overflow:hidden}
 <div class="band">
   <div class="top">
     <div>
-      <h1>Lucky Corporation</h1>
+      <h1 class="brand"><img src="icons/icon.svg" width="46" height="46" alt="" onerror="this.remove()">Lucky Corporation</h1>
       <p class="hello" id="hello">Selamat datang, Store Head.</p>
     </div>
     <div class="chips">
+      <button class="chip inst" id="instBtn" type="button" hidden><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5v9M4.5 7 8 10.5 11.5 7M2.5 13.5h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Pasang di HP</button>
       <span class="chip" id="cAi"><i></i>Menghubungkan AI…</span>
       <span class="chip" id="cDb"><i></i>Menyiapkan penyimpanan…</span>
       <span class="chip" id="cDrive"><i></i>Google Drive</span>
@@ -1420,6 +1433,32 @@ async function runOpus(){
       patch(t.id,{status:'cek',err:'Klip gagal dibuat: '+((e&&e.message)||'kesalahan tidak dikenal'),done:Date.now()});
       note.textContent='Gagal: '+((e&&e.message)||'kesalahan tidak dikenal');
     }finally{WK.zuzu.mood='';running.delete(t.id);busy=false;$('#cGo').disabled=false;render()}
+  });
+}
+
+/* ===== install on phone (PWA) ===== */
+{
+  const GH='https://lukianprayoga-stack.github.io/LUCKYCORPORATIONEX/';
+  const inClaude=!!(window.claude&&typeof claude.use==='function');
+  const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  let deferred=null;const btn=$('#instBtn');
+  if(!standalone)btn.hidden=false;
+  if('serviceWorker' in navigator&&!inClaude&&/github\.io$|^localhost$/.test(location.hostname)){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;btn.hidden=false});
+  window.addEventListener('appinstalled',()=>{btn.hidden=true;deferred=null});
+  function help(){
+    openId=null;
+    const body=inClaude
+      ?`<p>Halaman ini berjalan di dalam Claude, jadi belum bisa dipasang sebagai aplikasi dari sini. Pasang versi aplikasinya dari alamat ini, lalu buka di HP:</p><p><a href="${GH}" target="_blank" rel="noopener"><b>${GH}</b></a></p><p class="note">Di aplikasi HP, kantor 3D, papan tugas, dan Video Clipper mode upload bisa dipakai langsung. Untuk karyawan AI, OpusClip, dan data OFA, tekan link "buka versi Claude" di aplikasinya.</p>`
+      :ios?`<ol class="inst-steps"><li>Buka halaman ini di <b>Safari</b>.</li><li>Ketuk tombol <b>Bagikan</b> (kotak dengan panah ke atas).</li><li>Pilih <b>Tambahkan ke Layar Utama</b>, lalu <b>Tambah</b>.</li></ol><p class="note">Ikon semanggi Lucky Corporation akan muncul di layar utama dan terbuka layar penuh seperti aplikasi.</p>`
+      :`<ol class="inst-steps"><li>Buka halaman ini di <b>Chrome</b>.</li><li>Ketuk menu <b>⋮</b> di kanan atas.</li><li>Pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</li></ol><p class="note">Ikon semanggi Lucky Corporation akan muncul di layar utama dan daftar aplikasi.</p>`;
+    $('#sheet').innerHTML=`<button class="x" type="button" data-act="close" aria-label="Tutup">×</button><div style="display:flex;align-items:center;gap:14px"><img src="icons/icon-192.png" width="64" height="64" alt="" style="border-radius:16px" onerror="this.remove()"><h2 id="shTitle" style="margin:0">Pasang Lucky Corporation di HP</h2></div>${body}`;
+    $('#ov').classList.add('on');
+  }
+  btn.addEventListener('click',async()=>{
+    if(deferred){deferred.prompt();try{const r=await deferred.userChoice;if(r&&r.outcome==='accepted')btn.hidden=true}catch(e){}deferred=null;return}
+    help();
   });
 }
 

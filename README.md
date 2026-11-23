@@ -38,6 +38,14 @@ Tombol di kiri atas kantor memindahkan kamera: Operasional Toko · Lukky Studio 
 
 Di versi Claude, karyawan bisa membaca data asli toko dari spreadsheet OFA Hub (DSR/Dashboard RA, target bulanan, traffic, produk terlaris, stok pusat, barang masuk, promo, new arrival, blind counting, PICA, tinggalan, SH Kit) lewat koneksi Google Sheets pemilik. Kolom data pelanggan (telepon, email, nama) dibuang sebelum data dibaca AI. ID spreadsheet disimpan di pengaturan akun Claude, tidak di kode ini.
 
+## Pasang di HP (aplikasi)
+
+Versi GitHub Pages adalah aplikasi web yang bisa diinstal (PWA) dengan ikon semanggi Lucky Corporation:
+- **Android (Chrome):** buka alamat GitHub Pages → tombol "Pasang di HP" atau menu ⋮ → Instal aplikasi.
+- **iPhone (Safari):** Bagikan → Tambahkan ke Layar Utama.
+
+Ikon ada di folder `icons/` (SVG + PNG 32/180/192/512, termasuk versi maskable). Karyawan AI, OpusClip, dan data OFA tetap berjalan di versi Claude; aplikasi menautkannya.
+
 ## Dua cara membuka
 
 1. **Versi Claude (AI aktif)**: https://claude.ai/artifact/MhyzG7a3uGXQmWeSRT2uwg
