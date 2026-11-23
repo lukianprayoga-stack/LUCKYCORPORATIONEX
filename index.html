@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lucky Corporation HQ</title>
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#2346d8">
-<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest?v=lcell">
+<meta name="theme-color" content="#1B2A4A">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg?v=lcell">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=lcell">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=lcell">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Lucky Corp">
@@ -40,8 +40,8 @@ button{cursor:pointer}
 .hello{color:var(--muted);margin:4px 0 0}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:5px 11px;border-radius:99px;background:var(--surf);border:1px solid var(--line);white-space:nowrap}
-.brand{display:flex;align-items:center;gap:12px}.brand img{border-radius:12px;flex:none;box-shadow:0 6px 14px -8px rgba(20,33,138,.6)}
-.chip.inst{cursor:pointer;background:#2346d8;color:#fff;border-color:transparent;font-weight:700;min-height:32px}
+.brand{display:flex;align-items:center;gap:12px}.brand img{border-radius:12px;flex:none;box-shadow:0 6px 14px -8px rgba(27,42,74,.7)}
+.chip.inst{cursor:pointer;background:#1B2A4A;color:#fff;border-color:transparent;font-weight:700;min-height:32px}
 .inst-steps{margin:10px 0 0;padding-left:20px}.inst-steps li{margin:6px 0}
 .chip i{width:8px;height:8px;border-radius:50%;background:#9aa0b8}
 .chip.ok i{background:#1fae6b}.chip.warn i{background:#f2a516}
@@ -194,7 +194,7 @@ body.noscroll{overflow:hidden}
 <div class="band">
   <div class="top">
     <div>
-      <h1 class="brand"><img src="icons/icon.svg" width="46" height="46" alt="" onerror="this.remove()">Lucky Corporation</h1>
+      <h1 class="brand"><img src="icons/icon.svg?v=lcell" width="46" height="46" alt="" onerror="this.remove()">Lucky Corporation</h1>
       <p class="hello" id="hello">Selamat datang, Store Head.</p>
     </div>
     <div class="chips">
@@ -520,7 +520,7 @@ function init3D(){
     add(scene,BOX(.05,1.5,.04),mat('#f2f2f4'),wx,2.75,-6.39,false);add(scene,BOX(2.1,.05,.04),mat('#f2f2f4'),wx,2.75,-6.39,false);
   }
   // sign
-  const signTex=tex(1024,256,(g,w,h)=>{g.fillStyle='#2346d8';g.fillRect(0,0,w,h);g.fillStyle='#7be08f';[[96,92],[144,92],[96,164],[144,164]].forEach(([x,y])=>{g.beginPath();g.arc(x,y,30,0,7);g.fill()});g.fillStyle='#fff';g.beginPath();g.arc(120,128,13,0,7);g.fill();g.font='700 92px Fredoka, Arial, sans-serif';g.fillText('LUCKY CORPORATION',210,150);g.font='600 34px Arial, sans-serif';g.globalAlpha=.8;g.fillText('Kantor pusat · tim AI Store Head',214,208)});
+  const signTex=tex(1024,256,(g,w,h)=>{g.fillStyle='#1B2A4A';g.fillRect(0,0,w,h);const rr=(x,y,a,r)=>{g.beginPath();g.moveTo(x+r,y);g.arcTo(x+a,y,x+a,y+a,r);g.arcTo(x+a,y+a,x,y+a,r);g.arcTo(x,y+a,x,y,r);g.arcTo(x,y,x+a,y,r);g.closePath();g.fill()};const sc=150/120,gx=50,gy=53;for(let r=0;r<3;r++)for(let c=0;c<3;c++){g.fillStyle=(r===0&&c===2)?'#F26B4F':(c===0||r===2)?'#ffffff':'#33446A';rr(gx+c*43*sc,gy+r*43*sc,34*sc,6*sc)}g.fillStyle='#fff';let fs=80;do{g.font=`800 ${fs}px Sora, Fredoka, Arial, sans-serif`;fs-=2}while(fs>40&&g.measureText('LUCKY CORPORATION').width>740);g.fillText('LUCKY CORPORATION',236,142);g.fillStyle='#F26B4F';g.fillRect(240,166,120,6);g.fillStyle='#fff';g.font='600 32px Arial, sans-serif';g.globalAlpha=.8;g.fillText('Kantor pusat · tim AI Store Head',378,182)});
   add(scene,new T.PlaneGeometry(4.6,1.15),new T.MeshStandardMaterial({map:signTex,roughness:.6}),-5.2,2.95,-6.44,false);
   // charts
   const chart=(c1)=>tex(512,384,(g,w,h)=>{g.fillStyle='#fbfbfd';g.fillRect(0,0,w,h);g.strokeStyle='#c9ccd8';g.lineWidth=4;g.strokeRect(6,6,w-12,h-12);g.fillStyle='#ff5a36';g.fillRect(40,40,220,22);[120,200,150,260,300].forEach((v,i)=>{g.fillStyle=i===4?c1:'#9aa3c0';g.fillRect(60+i*86,h-40-v*.9,56,v*.9)})});
@@ -1755,7 +1755,7 @@ let ibRef=null;
   async function notify(title,body){
     try{if(!('Notification' in window)||Notification.permission!=='granted')return;
       const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration().catch(()=>null);
-      const opt={body,icon:'icons/icon-192.png',badge:'icons/icon-192.png',tag:'lucky-adzan',renotify:true};
+      const opt={body,icon:'icons/icon-192.png?v=lcell',badge:'icons/icon-192.png?v=lcell',tag:'lucky-adzan',renotify:true};
       if(reg&&reg.showNotification)await reg.showNotification(title,opt);else new Notification(title,opt)}catch(e){}
   }
   /* adzan event */
@@ -1806,9 +1806,9 @@ let ibRef=null;
     openId=null;
     const body=inClaude
       ?`<p>Halaman ini berjalan di dalam Claude, jadi belum bisa dipasang sebagai aplikasi dari sini. Pasang versi aplikasinya dari alamat ini, lalu buka di HP:</p><p><a href="${GH}" target="_blank" rel="noopener"><b>${GH}</b></a></p><p class="note">Di aplikasi HP, kantor 3D, papan tugas, dan Video Clipper mode upload bisa dipakai langsung. Untuk karyawan AI, OpusClip, dan data OFA, tekan link "buka versi Claude" di aplikasinya.</p>`
-      :ios?`<ol class="inst-steps"><li>Buka halaman ini di <b>Safari</b>.</li><li>Ketuk tombol <b>Bagikan</b> (kotak dengan panah ke atas).</li><li>Pilih <b>Tambahkan ke Layar Utama</b>, lalu <b>Tambah</b>.</li></ol><p class="note">Ikon semanggi Lucky Corporation akan muncul di layar utama dan terbuka layar penuh seperti aplikasi.</p>`
-      :`<ol class="inst-steps"><li>Buka halaman ini di <b>Chrome</b>.</li><li>Ketuk menu <b>⋮</b> di kanan atas.</li><li>Pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</li></ol><p class="note">Ikon semanggi Lucky Corporation akan muncul di layar utama dan daftar aplikasi.</p>`;
-    $('#sheet').innerHTML=`<button class="x" type="button" data-act="close" aria-label="Tutup">×</button><div style="display:flex;align-items:center;gap:14px"><img src="icons/icon-192.png" width="64" height="64" alt="" style="border-radius:16px" onerror="this.remove()"><h2 id="shTitle" style="margin:0">Pasang Lucky Corporation di HP</h2></div>${body}`;
+      :ios?`<ol class="inst-steps"><li>Buka halaman ini di <b>Safari</b>.</li><li>Ketuk tombol <b>Bagikan</b> (kotak dengan panah ke atas).</li><li>Pilih <b>Tambahkan ke Layar Utama</b>, lalu <b>Tambah</b>.</li></ol><p class="note">Ikon L Cell Lucky Corporation akan muncul di layar utama dan terbuka layar penuh seperti aplikasi.</p>`
+      :`<ol class="inst-steps"><li>Buka halaman ini di <b>Chrome</b>.</li><li>Ketuk menu <b>⋮</b> di kanan atas.</li><li>Pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</li></ol><p class="note">Ikon L Cell Lucky Corporation akan muncul di layar utama dan daftar aplikasi.</p>`;
+    $('#sheet').innerHTML=`<button class="x" type="button" data-act="close" aria-label="Tutup">×</button><div style="display:flex;align-items:center;gap:14px"><img src="icons/icon-192.png?v=lcell" width="64" height="64" alt="" style="border-radius:16px" onerror="this.remove()"><h2 id="shTitle" style="margin:0">Pasang Lucky Corporation di HP</h2></div>${body}`;
     $('#ov').classList.add('on');
   }
   btn.addEventListener('click',async()=>{

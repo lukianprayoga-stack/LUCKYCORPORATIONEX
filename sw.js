@@ -1,6 +1,6 @@
 /* Lucky Corporation service worker: network first, cached shell as offline fallback. */
-const CACHE = 'lucky-corp-v3';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon.svg', './icons/apple-touch-icon.png'];
+const CACHE = 'lucky-corp-v4';
+const SHELL = ['./', './index.html', './manifest.webmanifest?v=lcell', './icons/icon-192.png?v=lcell', './icons/icon-512.png?v=lcell', './icons/icon.svg?v=lcell', './icons/apple-touch-icon.png?v=lcell'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

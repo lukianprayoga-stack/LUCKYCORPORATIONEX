@@ -51,11 +51,11 @@ Di versi Claude, karyawan bisa membaca data asli toko dari spreadsheet OFA Hub (
 
 ## Pasang di HP (aplikasi)
 
-Versi GitHub Pages adalah aplikasi web yang bisa diinstal (PWA) dengan ikon semanggi Lucky Corporation:
+Versi GitHub Pages adalah aplikasi web yang bisa diinstal (PWA). Ikonnya logo **L Cell** (logo final Lukky Studio: huruf L dari 9 sel, sel putih di latar navy #1B2A4A, satu sel coral #F26B4F); logo yang sama dipakai di header, favicon laptop, dan papan nama kantor 3D:
 - **Android (Chrome):** buka alamat GitHub Pages → tombol "Pasang di HP" atau menu ⋮ → Instal aplikasi.
 - **iPhone (Safari):** Bagikan → Tambahkan ke Layar Utama.
 
-Ikon ada di folder `icons/` (SVG + PNG 32/180/192/512, termasuk versi maskable). Karyawan AI, OpusClip, dan data OFA tetap berjalan di versi Claude; aplikasi menautkannya.
+Ikon ada di folder `icons/` (SVG + PNG 32/180/192/512, termasuk versi maskable). Link ikon memakai `?v=lcell` agar HP dan laptop tidak memakai ikon lama dari cache. Android memperbarui ikon aplikasi yang sudah terpasang dengan sendirinya dalam 1–2 hari; di iPhone, hapus ikon lama lalu Tambahkan ke Layar Utama lagi. Karyawan AI, OpusClip, dan data OFA tetap berjalan di versi Claude; aplikasi menautkannya.
 
 ## Dua cara membuka
 
