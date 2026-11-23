@@ -167,7 +167,8 @@ body.noscroll{overflow:hidden}
 .prog{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px}.prog i{display:block;height:100%;width:0;background:#e0457b;transition:width .3s}
 .car{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
 .car-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
-.car-strip img{width:180px;aspect-ratio:4/5;border-radius:10px;flex:none;box-shadow:0 4px 12px -6px rgba(0,0,0,.35)}
+.car-strip img{height:225px;width:auto;border-radius:10px;flex:none;box-shadow:0 4px 12px -6px rgba(0,0,0,.35);background:#fff}
+.car .mk{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 @media (max-width:820px){.clip-grid{grid-template-columns:1fr}.clip-row{grid-template-columns:1fr 1fr}}
 @media (max-width:420px){.ck{grid-template-columns:1fr}.ck video,.ck .ph{width:100%;max-width:220px}}
 .src{margin-top:12px;font-size:13px;color:var(--muted);background:var(--surf);border-radius:10px;padding:8px 12px}
@@ -1214,8 +1215,7 @@ Aturan menulis:
 - Jangan menyarankan membagikan file lewat link publik; file dibagikan ke Gmail pembeli dengan akses Dibatasi.
 - Jika butuh data yang tidak ada, beri tempat isian seperti [isi: …] dan daftar di "## Data yang dibutuhkan".
 - Tutup dengan "## Langkah berikutnya" berisi 1–3 aksi singkat.
-- Maksimal sekitar 350 kata.${m.id==='mochi'||/carousel|slide|postingan|konten/i.test(t.text)?`
-- Jika hasilmu berupa konten carousel/postingan Instagram, akhiri jawaban dengan blok kode berlabel slides (tiga backtick lalu kata slides) berisi JSON array 3–7 objek {"judul":"maks 8 kata","isi":"maks 32 kata"}. Slide pertama = cover dengan hook, slide terakhir = ajakan (mis. DM "TEMPLATE"). Dashboard akan merendernya otomatis menjadi slide desain Lukky Studio.`:''}`}
+- Maksimal sekitar 350 kata.${visualRule(m)}`}
 function ibadahPrompt(t,m,ctx){const today=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Jakarta'});return `Hari ini: ${today} (WIB).
 Kamu adalah ${m.name}, muadzin dan pengingat ibadah di Lucky Corporation, perusahaan milik Luki (Store Head toko Eiger dan pemilik Lukky Studio). Fokusmu: ${m.focus}.
 ${ctx?`Jadwal sholat hari ini (WIB, metode Kemenag, perkiraan perhitungan): ${ctx}
@@ -1228,7 +1228,7 @@ Aturan menulis:
 - Untuk ayat atau hadits, sebutkan sumbernya (nama surah dan nomor ayat, atau perawi hadits) dan jangan mengarang redaksi atau nomor. Jika ragu, sampaikan maknanya secara umum tanpa kutipan.
 - Untuk pertanyaan hukum fiqih yang rinci atau ada perbedaan pendapat, jelaskan secara umum dan sarankan bertanya kepada ustadz atau ulama setempat.
 - Jadwal sholat di atas hasil perhitungan; untuk kepastian, sarankan merujuk jadwal resmi Kemenag atau masjid setempat.
-- Tutup dengan "## Langkah berikutnya" berisi 1–3 aksi singkat. Maksimal sekitar 300 kata.`}
+- Tutup dengan "## Langkah berikutnya" berisi 1–3 aksi singkat. Maksimal sekitar 300 kata.${visualRule(m)}`}
 function workPrompt(t,ctx=''){const m=BY[t.div]||BY.lucky;if(m.dept==='studio')return studioPrompt(t,m,ctx);if(m.dept==='ibadah')return ibadahPrompt(t,m,ctx);const today=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});return `Hari ini: ${today}.
 Kamu adalah ${m.name}, karyawan AI bagian ${m.role} di Lucky Corporation — tim AI pribadi seorang Store Head toko ritel perlengkapan outdoor Eiger. Pekerjaan toko sangat dinamis, jadi hasilmu harus cepat dipakai.
 Fokusmu: ${m.focus}.
@@ -1245,7 +1245,7 @@ Aturan menulis:
 - Gunakan poin, langkah bernomor, atau tabel markdown sederhana bila membantu.
 - Jangan mengarang angka, nama orang, atau data toko. Jika butuh data yang tidak diberikan, beri tempat isian seperti [isi: target harian] dan daftar datanya di bagian "## Data yang dibutuhkan".
 - Tutup dengan "## Langkah berikutnya" berisi 1–3 aksi singkat.
-- Maksimal sekitar 350 kata.${ofaReady()?`
+- Maksimal sekitar 350 kata.${visualRule(m)}${ofaReady()?`
 
 ${ctx?`DATA ASLI TOKO DARI OFA HUB (EIGER Store 7014 Soekarno Solo Baru) — gunakan angka ini, jangan tulis tempat isian untuk data yang sudah ada di sini. Jika profil toko kosong, anggap data ini sebagai profil toko:
 ${ctx}
@@ -1298,6 +1298,7 @@ async function work(id){
     t.sumber=[...used];
     flash[t.div]=Date.now();setTimeout(updateOffice,2700);
     patch(id,{status:'cek',hasil:r.text,done:Date.now(),sumber:[...used],err:ofaErr});
+    setTimeout(()=>autoVisual(id).catch(e=>console.warn('Gambar gagal:',e)),300);
   }catch(e){
     const code=e&&e.code;
     if(code==='not_granted'){sample=null;aiChip();patch(id,{status:'antrian'})}
@@ -1335,7 +1336,7 @@ function card(t){
   const m=BY[t.div];
   const who=m?`<i style="background:${m.color}"></i>${esc(m.name)} · ${esc(transit.has(t.id)?'Lucky sedang mengantar':m.role)}`:(routing.has(t.id)?'<i style="background:#f2a516"></i>Lucky sedang membagi…':'<i></i>Belum dibagi');
   const tag=t.prio==='mendesak'?'<span class="tag">Mendesak</span>':t.prio==='penting'?'<span class="tag pen">Penting</span>':'';
-  return `<button class="card" type="button" data-open="${esc(t.id)}"><span class="who2">${who}</span><b>${esc(t.judul||t.text)}</b><span class="meta">${tag}<span>${ago(t.done||t.created)}</span>${t.err?'<span class="err">perlu dicek</span>':''}${t.drive?'<span>di Drive</span>':''}</span></button>`;
+  return `<button class="card" type="button" data-open="${esc(t.id)}"><span class="who2">${who}</span><b>${esc(t.judul||t.text)}</b><span class="meta">${tag}<span>${ago(t.done||t.created)}</span>${t.err?'<span class="err">perlu dicek</span>':''}${t.drive?'<span>di Drive</span>':''}${t.gambar?`<span>${t.gambar.n} gambar</span>`:''}</span></button>`;
 }
 function greet(){const h=new Date().getHours();return h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam'}
 function stats(){
@@ -1348,8 +1349,9 @@ function openSheet(id,refresh){
   const t=tasks.find(x=>x.id===id);if(!t){closeSheet();return}
   if(refresh&&running.has(id))return;
   openId=id;const m=BY[t.div],st=eff(t);
-  const slides=!running.has(id)&&t.hasil?parseSlides(t.hasil):null;
-  const body=running.has(id)?(md(stripSlides(live[id]||''))||'<p class="note">Sedang mulai menulis…</p>'):(t.hasil?md(stripSlides(t.hasil))+(slides?'<div class="car" id="car"><p class="note">Menyiapkan slide…</p></div>':''):`<p class="note">${sample?'Belum dikerjakan. Tugas akan diproses saat gilirannya.':`AI belum aktif di tampilan ini, jadi tugas ini dicatat sebagai pengingat. <a href="${CLAUDE_URL}" target="_blank" rel="noopener">Buka versi Claude</a> agar karyawan mengerjakannya.`}</p>`);
+  const slides=!running.has(id)&&t.hasil?parseVisual(t.hasil):null;
+  const canMake=!slides&&t.hasil&&!running.has(id)&&!noVisual(t);
+  const body=running.has(id)?(md(stripSlides(live[id]||''))||'<p class="note">Sedang mulai menulis…</p>'):(t.hasil?md(stripSlides(t.hasil))+(slides?'<div class="car" id="car"><p class="note">Menyiapkan gambar…</p></div>':canMake?`<div class="car mk" id="car">${sample?'<button class="btn pri" type="button" data-act="mkvis">Buat gambar jadi</button><span class="note">Ubah hasil ini menjadi desain siap pakai (feed, story, poster, atau A4).</span>':'<span class="note">Gambar jadi dibuat oleh AI di versi Claude.</span>'}</div>`:''):`<p class="note">${sample?'Belum dikerjakan. Tugas akan diproses saat gilirannya.':`AI belum aktif di tampilan ini, jadi tugas ini dicatat sebagai pengingat. <a href="${CLAUDE_URL}" target="_blank" rel="noopener">Buka versi Claude</a> agar karyawan mengerjakannya.`}</p>`);
   $('#sheet').innerHTML=`<button class="x" type="button" data-act="close" aria-label="Tutup">×</button>
   <div class="card" style="border:0;padding:0;margin:0"><span class="who2">${m?`<i style="background:${m.color}"></i>${esc(m.name)} · ${esc(m.role)}`:'Belum dibagi'} · ${esc({antrian:'Antrian',proses:'Dikerjakan',cek:'Siap dicek',selesai:'Selesai'}[st])}</span></div>
   <h2 id="shTitle" style="margin-top:6px">${esc(t.judul||'Tugas')}</h2>
@@ -1366,7 +1368,7 @@ function openSheet(id,refresh){
     ${!running.has(id)?`<button class="btn dang" type="button" data-act="del">${delArm?'Yakin hapus?':'Hapus'}</button>`:''}
   </div><p class="note" id="actNote"></p>`;
   $('#ov').classList.add('on');
-  if(slides)renderCarousel(slides,t);
+  if(slides)renderVisual(slides,t);
 }
 function closeSheet(){openId=null;delArm=false;$('#ov').classList.remove('on')}
 async function toDrive(t){
@@ -1400,6 +1402,7 @@ $('#sheet').addEventListener('click',async e=>{
   if(act==='close')return closeSheet();if(!t)return;
   if(act==='copy'){try{await navigator.clipboard.writeText(stripSlides(t.hasil));$('#actNote').textContent='Hasil disalin.'}catch{$('#actNote').textContent='Tidak bisa menyalin otomatis — blok teksnya lalu salin manual.'}}
   else if(act==='drive')toDrive(t);
+  else if(act==='mkvis'){a.disabled=true;const v=await makeVisual(t,$('#actNote'));if(v){$('#actNote').textContent='';openSheet(t.id);autoVisual(t.id)}else a.disabled=false}
   else if(act==='redo'){patch(t.id,{status:'antrian',hasil:'',err:'',drive:''});runEnabled=true;closeSheet();pump()}
   else if(act==='ok'){patch(t.id,{status:'selesai',done:Date.now()});if(!sample&&t.div)flash[t.div]=Date.now();closeSheet();render();setTimeout(updateOffice,2700)}
   else if(act==='reopen'){patch(t.id,{status:'cek'});openSheet(t.id);render()}
@@ -1442,44 +1445,208 @@ async function offerFile(name,blob,noteEl){
 }
 const fileSafe=s=>String(s||'klip').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').slice(0,60)||'klip';
 
-/* ===== carousel slides (Lukky Studio style) ===== */
-function parseSlides(txt){const m=String(txt||'').match(/```slides\s*([\s\S]*?)```/i);if(!m)return null;try{const a=JSON.parse(m[1]);return Array.isArray(a)&&a.length?a.slice(0,10).map(x=>({judul:String(x.judul||x.title||''),isi:String(x.isi||x.body||'')})):null}catch(e){return null}}
-function stripSlides(txt){return String(txt||'').replace(/```slides[\s\S]*?(```|$)/i,'').trim()}
-function wrapText(g,text,maxW){const words=String(text).split(/\s+/);const lines=[];let cur='';for(const w of words){const t=cur?cur+' '+w:w;if(g.measureText(t).width>maxW&&cur){lines.push(cur);cur=w}else cur=t}if(cur)lines.push(cur);return lines}
-function lCell(g,x,y,c,gap,dark){for(let r=0;r<3;r++)for(let k=0;k<3;k++){const L=k===0||r===2,luck=r===0&&k===2;g.fillStyle=luck?'#F26B4F':L?(dark?'#ffffff':'#1B2A4A'):(dark?'#33446A':'#E3E7EF');g.fillRect(x+k*(c+gap),y+r*(c+gap),c,c)}}
-async function slideCanvas(sl,i,n){
-  try{await Promise.all([document.fonts.load('800 80px Sora'),document.fonts.load('600 40px Sora')])}catch(e){}
-  const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
-  const dark=i===0||i===n-1,NAVY='#1B2A4A',CORAL='#F26B4F';
-  g.fillStyle=dark?NAVY:'#F6F7FA';g.fillRect(0,0,W,H);
-  // grid motif
-  g.strokeStyle=dark?'rgba(255,255,255,.06)':'rgba(27,42,74,.06)';g.lineWidth=2;for(let x=0;x<=W;x+=90){g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke()}for(let y=0;y<=H;y+=90){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke()}
-  lCell(g,84,84,26,6,dark);
-  g.fillStyle=dark?'#fff':NAVY;g.font='800 34px Sora, Arial, sans-serif';g.fillText('LUKKY',196,118);g.font='600 18px Sora, Arial, sans-serif';g.fillText('S T U D I O',198,146);
-  g.fillStyle=CORAL;g.font='800 30px Sora, Arial, sans-serif';const num=`${i+1}/${n}`;g.fillText(num,W-84-g.measureText(num).width,124);
-  const maxW=W-168,tf=`800 ${dark?84:68}px Sora, Arial, sans-serif`,bf='600 42px Sora, Arial, sans-serif',tl=dark?100:82;
-  g.font=tf;const TL=wrapText(g,sl.judul,maxW).slice(0,5);g.font=bf;const BL=wrapText(g,sl.isi,maxW).slice(0,9);
-  const blockH=TL.length*tl+70+BL.length*60;let y=Math.max(300,260+((H-420)-blockH)/2)+tl*.8;
-  g.fillStyle=dark?'#fff':NAVY;g.font=tf;
-  for(const ln of TL){g.fillText(ln,84,y);y+=tl}
-  g.fillStyle=CORAL;g.fillRect(84,y-20,140,12);y+=50;
-  g.fillStyle=dark?'rgba(255,255,255,.85)':'#4A5875';g.font=bf;
-  for(const ln of BL){g.fillText(ln,84,y);y+=60}
-  if(i<n-1){g.fillStyle=dark?'#fff':NAVY;g.font='600 28px Sora, Arial, sans-serif';const sw='Geser →';g.fillText(sw,W-84-g.measureText(sw).width,H-84)}
-  g.fillStyle=dark?'rgba(255,255,255,.6)':'#8a93a8';g.font='600 26px Sora, Arial, sans-serif';g.fillText('template · dashboard · katalog',84,H-84);
+/* ===== gambar jadi untuk setiap hasil (carousel · story · poster · A4) ===== */
+const VIS_SIZE={carousel:[1080,1350],poster:[1080,1350],story:[1080,1920],a4:[1240,1754]};
+const VIS_MAX={carousel:10,poster:1,story:3,a4:3};
+const VIS_NAME={carousel:'Carousel feed',poster:'Poster',story:'Story',a4:'Lembar A4 siap cetak'};
+const THEMES={
+ studio:{dark:'#1B2A4A',acc:'#F26B4F',light:'#F6F7FA',cell:'#E3E7EF',cellD:'#33446A',ink:'#1B2A4A',body:'#4A5875',mark:'lcell',name:'LUKKY',sub:'S T U D I O',foot:'template · dashboard · katalog'},
+ toko:{dark:'#1E3B2F',acc:'#F2A516',light:'#F5F3EC',cell:'#E4E8E1',cellD:'#35574A',ink:'#1E3B2F',body:'#4E5B52',mark:'lcell',name:'LUCKY CORPORATION',sub:'O P E R A S I O N A L   T O K O',foot:'Lucky Corporation · Operasional Toko'},
+ ibadah:{dark:'#0F5132',acc:'#D4AF37',light:'#F3F7F1',cell:'#DCE8DE',cellD:'#2E6B4E',ink:'#0F5132',body:'#4B5E52',mark:'dome',name:'MASJID LUCKY',sub:'L U C K Y   C O R P O R A T I O N',foot:'Masjid Lucky · Lucky Corporation'}
+};
+function visualRule(m){return `
+- WAJIB: setiap jawaban disertai gambar jadi. Akhiri jawaban dengan blok kode berlabel visual (tiga backtick lalu kata visual) berisi SATU objek JSON, tanpa teks apa pun setelah blok itu:
+{"format":"carousel|story|poster|a4","label":"teks pojok kiri atas, boleh kosong","slides":[{"judul":"maks 8 kata","isi":"maks 32 kata","poin":["opsional, maks 7 poin, tiap poin maks 12 kata"],"tabel":{"kolom":["opsional"],"baris":[["..."]]}}]}
+- Pilih format yang paling cocok: carousel (3–7 slide 1080x1350; slide pertama cover dengan hook, slide terakhir ajakan) untuk postingan feed Instagram atau edukasi; story (1–3 frame 1080x1920) untuk story Instagram atau status WhatsApp; poster (1 slide 1080x1350) untuk promo, pengumuman, kutipan, atau ringkasan singkat; a4 (1–3 halaman siap cetak) untuk checklist, SOP, jadwal, rencana kerja, laporan, notulen, atau briefing.
+- Checklist dan langkah pakai "poin". Jadwal shift, target, atau rekap angka pakai "tabel" (maks 7 kolom dan 14 baris per halaman). Isi gambar harus sesuai jawabanmu; jangan mengarang angka, harga, atau testimoni. Blok visual tidak dihitung dalam batas kata.${m.dept==='toko'?'\n- Untuk konten yang dilihat pelanggan, isi "label" dengan nama toko dari profil atau data toko; untuk dokumen internal biarkan kosong.':''}`}
+function parseVisual(txt){
+  const s=String(txt||'');let m=s.match(/```visual\s*([\s\S]*?)```/i),legacy=false;
+  if(!m){m=s.match(/```slides\s*([\s\S]*?)```/i);legacy=true}
+  if(!m)return null;
+  let j;try{j=JSON.parse(m[1].trim())}catch(e){return null}
+  if(Array.isArray(j))j={format:'carousel',slides:j};
+  if(!j||!Array.isArray(j.slides)||!j.slides.length)return null;
+  let f=String(j.format||'').toLowerCase();if(!VIS_SIZE[f])f=legacy||j.slides.length>1?'carousel':'poster';
+  const slides=j.slides.slice(0,VIS_MAX[f]).map(x=>{x=x||{};const tb=x.tabel||x.table,pts=x.poin||x.points;
+    return{judul:String(x.judul||x.title||''),isi:String(x.isi||x.body||''),poin:Array.isArray(pts)?pts.map(String).filter(Boolean).slice(0,12):[],
+      tabel:tb&&Array.isArray(tb.baris||tb.rows)?{kolom:(tb.kolom||tb.columns||[]).map(String).slice(0,8),baris:(tb.baris||tb.rows).slice(0,20).map(r=>(Array.isArray(r)?r:[r]).map(v=>String(v??'')).slice(0,8))}:null}});
+  return{format:f,label:String(j.label||'').slice(0,40),slides};
+}
+function stripSlides(txt){return String(txt||'').replace(/```(slides|visual)[\s\S]*?(```|$)/ig,'').trim()}
+function wrapText(g,text,maxW){
+  const out=[];for(const para of String(text||'').split(/\n/)){const words=para.split(/\s+/).filter(Boolean);let cur='';
+    for(let w of words){
+      while(g.measureText(w).width>maxW&&w.length>1){let k=w.length;while(k>1&&g.measureText(w.slice(0,k)).width>maxW)k--;if(cur){out.push(cur);cur=''}out.push(w.slice(0,k));w=w.slice(k)}
+      const t=cur?cur+' '+w:w;if(g.measureText(t).width>maxW&&cur){out.push(cur);cur=w}else cur=t}
+    if(cur)out.push(cur)}
+  return out;
+}
+function rrect(g,x,y,w,h,r){g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,r);else g.rect(x,y,w,h);g.fill()}
+function drawMark(g,th,x,y,size,dark){
+  if(th.mark==='dome'){const cx=x+size/2,r=size*.36,base=y+size*.7;g.fillStyle=dark?'#fff':th.ink;
+    g.beginPath();g.arc(cx,base,r,Math.PI,0);g.fill();g.fillRect(cx-r*1.15,base,r*2.3,size*.26);
+    g.fillStyle=th.acc;g.fillRect(cx-size*.025,base-r-size*.2,size*.05,size*.2);g.beginPath();g.arc(cx,base-r-size*.22,size*.06,0,7);g.fill();return}
+  const c=size*34/120,gap=size*9/120;
+  for(let r=0;r<3;r++)for(let k=0;k<3;k++){const L=k===0||r===2,luck=r===0&&k===2;g.fillStyle=luck?th.acc:L?(dark?'#ffffff':th.ink):(dark?th.cellD:th.cell);rrect(g,x+k*(c+gap),y+r*(c+gap),c,c,c*.18)}
+}
+function drawBrand(g,th,vis,x,y,dark){
+  drawMark(g,th,x,y,90,dark);
+  const name=(vis.label||th.name).toUpperCase();let fs=34;
+  do{g.font=`800 ${fs}px Sora, Arial, sans-serif`;fs-=2}while(fs>18&&g.measureText(name).width>560);
+  g.fillStyle=dark?'#fff':th.ink;g.fillText(name,x+112,y+38);
+  g.font='600 17px Sora, Arial, sans-serif';g.fillStyle=dark?'rgba(255,255,255,.72)':th.body;g.fillText(th.sub,x+114,y+68);
+}
+function drawTable(g,tb,x,y,W,fs,o,paint){
+  const th=o.th,rows=tb.kolom.length?[tb.kolom,...tb.baris]:tb.baris,cols=Math.max(1,...rows.map(r=>r.length));
+  g.font=`600 ${fs}px Sora, Arial, sans-serif`;
+  const want=[];for(let c=0;c<cols;c++)want[c]=Math.max(fs*3,...rows.map(r=>Math.min(g.measureText(String(r[c]??'')).width,W*.45)))+fs*1.2;
+  const sum=want.reduce((a,b)=>a+b,0),cw=want.map(v=>v/sum*W),pad=fs*.55,lh=fs*1.3;let yy=y;
+  rows.forEach((r,ri)=>{
+    const head=ri===0&&tb.kolom.length>0;g.font=`${head?800:600} ${fs}px Sora, Arial, sans-serif`;
+    const lines=[];for(let c=0;c<cols;c++)lines[c]=wrapText(g,String(r[c]??''),cw[c]-pad*2).slice(0,4);
+    const rh=Math.max(1,...lines.map(l=>l.length))*lh+pad*1.4;
+    if(paint){
+      g.fillStyle=head?(o.dark?th.acc:th.dark):(ri%2?(o.dark?'rgba(255,255,255,.06)':'#ffffff'):(o.dark?'rgba(255,255,255,.13)':th.cell));g.fillRect(x,yy,W,rh);
+      let cx=x;for(let c=0;c<cols;c++){g.fillStyle=head?(o.dark?th.dark:'#fff'):(o.dark?'#fff':th.ink);lines[c].forEach((ln,i)=>g.fillText(ln,cx+pad,yy+pad*.7+lh*(i+1)-lh*.25));cx+=cw[c]}
+      g.strokeStyle=o.dark?'rgba(255,255,255,.2)':'rgba(0,0,0,.12)';g.lineWidth=1;g.strokeRect(x,yy,W,rh)}
+    yy+=rh});
+  return yy-y+20;
+}
+function drawBlock(g,sl,o,s,paint){
+  const th=o.th,x=o.x,W=o.w;let y=o.y;
+  if(sl.judul){const sz=Math.round(o.T*s),lh=sz*1.14;g.font=`800 ${sz}px Sora, Arial, sans-serif`;
+    if(paint)g.fillStyle=o.dark?'#fff':th.ink;
+    for(const ln of wrapText(g,sl.judul,W)){y+=lh;if(paint)g.fillText(ln,x,y-lh*.22)}
+    y+=18*s;const bh=Math.max(6,Math.round(12*s));if(paint){g.fillStyle=th.acc;g.fillRect(x,y,Math.max(60,Math.round(140*s)),bh)}y+=bh+34*s}
+  if(sl.isi){const sz=Math.round(o.B*s),lh=sz*1.42;g.font=`600 ${sz}px Sora, Arial, sans-serif`;
+    if(paint)g.fillStyle=o.dark?'rgba(255,255,255,.86)':th.body;
+    for(const ln of wrapText(g,sl.isi,W)){y+=lh;if(paint)g.fillText(ln,x,y-lh*.28)}y+=24*s}
+  if(sl.poin.length){const sz=Math.round(o.P*s),lh=sz*1.38,ind=sz*1.55;
+    for(const p of sl.poin){g.font=`600 ${sz}px Sora, Arial, sans-serif`;const L=wrapText(g,p,W-ind),base=y+lh-lh*.28;
+      if(paint){if(o.check){const b=sz*.85;g.strokeStyle=o.dark?'#fff':th.ink;g.lineWidth=Math.max(2,3*s);g.strokeRect(x+2,base-b+sz*.06,b,b)}
+        else{g.fillStyle=th.acc;g.beginPath();g.arc(x+sz*.42,base-sz*.34,sz*.22,0,7);g.fill()}
+        g.fillStyle=o.dark?'#fff':th.ink}
+      for(const ln of L){y+=lh;if(paint)g.fillText(ln,x+ind,y-lh*.28)}y+=12*s}
+    y+=14*s}
+  if(sl.tabel&&sl.tabel.baris.length)y+=drawTable(g,sl.tabel,x,y,W,Math.round(o.tb*s),o,paint);
+  return y-o.y;
+}
+function fitScale(g,sl,o,max=1){for(let s=max;s>=.42;s-=.04){if(drawBlock(g,sl,o,s,false)<=o.h)return s}return .42}
+function socialSlide(sl,i,n,vis,th,W,H){
+  const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+  const dark=vis.format==='poster'||i===0||i===n-1;
+  g.fillStyle=dark?th.dark:th.light;g.fillRect(0,0,W,H);
+  g.strokeStyle=dark?'rgba(255,255,255,.06)':'rgba(0,0,0,.05)';g.lineWidth=2;for(let x=0;x<=W;x+=90){g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke()}for(let y=0;y<=H;y+=90){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke()}
+  drawBrand(g,th,vis,84,84,dark);
+  if(n>1){g.fillStyle=th.acc;g.font='800 30px Sora, Arial, sans-serif';const num=`${i+1}/${n}`;g.fillText(num,W-84-g.measureText(num).width,124)}
+  const story=vis.format==='story',top=story?320:250,bottom=H-(story?220:160);
+  const o={x:84,y:0,w:W-168,h:bottom-top,T:(dark&&!sl.poin.length&&!sl.tabel)?(story?96:88):(story?78:70),B:story?46:42,P:story?42:38,tb:28,dark,th,check:false};
+  const s=fitScale(g,sl,o,1.15),bh=drawBlock(g,sl,o,s,false);
+  drawBlock(g,sl,{...o,y:top+Math.max(0,(o.h-bh)*(story?.45:.4))},s,true);
+  const fy=H-(story?120:84);
+  if(i<n-1&&n>1){g.fillStyle=dark?'#fff':th.ink;g.font='600 28px Sora, Arial, sans-serif';const sw=story?'Ketuk →':'Geser →';g.fillText(sw,W-84-g.measureText(sw).width,fy)}
+  g.fillStyle=dark?'rgba(255,255,255,.6)':'#8a93a8';g.font='600 26px Sora, Arial, sans-serif';g.fillText(th.foot,84,fy);
   return c;
 }
-async function renderCarousel(slides,t){
+function a4Page(sl,i,n,vis,th,W,H){
+  const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+  g.fillStyle='#ffffff';g.fillRect(0,0,W,H);
+  g.fillStyle=th.dark;g.fillRect(0,0,W,200);g.fillStyle=th.acc;g.fillRect(0,200,W,10);
+  drawBrand(g,th,vis,84,56,true);
+  const tgl=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Jakarta'});
+  g.font='600 24px Sora, Arial, sans-serif';g.fillStyle='rgba(255,255,255,.85)';g.fillText(tgl,W-84-g.measureText(tgl).width,98);
+  if(n>1){g.fillStyle=th.acc;g.font='800 24px Sora, Arial, sans-serif';const hp=`Hal. ${i+1}/${n}`;g.fillText(hp,W-84-g.measureText(hp).width,138)}
+  const check=/checklist|ceklis|cek ?list|persiapan|opening|closing|to-?do|daftar tugas|langkah|sop/i.test(sl.judul+' '+sl.isi);
+  const o={x:90,y:270,w:W-180,h:H-270-150,T:60,B:30,P:30,tb:24,dark:false,th,check};
+  drawBlock(g,sl,o,fitScale(g,sl,o,1.45),true);
+  g.fillStyle=th.cell;g.fillRect(90,H-110,W-180,2);
+  g.fillStyle='#7a8478';g.font='600 20px Sora, Arial, sans-serif';g.fillText(th.foot,90,H-70);
+  const sig='Dibuat oleh tim AI Lucky Corporation';g.fillText(sig,W-90-g.measureText(sig).width,H-70);
+  return c;
+}
+async function visualCanvases(vis,dept){
+  try{await Promise.all([document.fonts.load('800 80px Sora'),document.fonts.load('600 40px Sora')])}catch(e){}
+  const th=THEMES[dept]||THEMES.toko,[W,H]=VIS_SIZE[vis.format],n=vis.slides.length;
+  return vis.slides.map((sl,i)=>vis.format==='a4'?a4Page(sl,i,n,vis,th,W,H):socialSlide(sl,i,n,vis,th,W,H));
+}
+/* Drive: folder "Lucky Corporation – Gambar/<tanggal WIB>" */
+const FOLDER_MIME='application/vnd.google-apps.folder';
+let drv=null,drvRef=null,dayLock=Promise.resolve();
+const dayWIB=()=>new Date(Date.now()+7*3600e3).toISOString().slice(0,10);
+const folderUrl=f=>f.viewUrl||f.webViewLink||`https://drive.google.com/drive/folders/${f.id}`;
+async function driveCreate(a){const r=await mcp.callTool('Google Drive','create_file',a);const p=(r&&r.payload)||{},f=p.file||p;if(!f||!f.id)throw new Error('Drive tidak mengembalikan ID file');return f}
+function dayFolder(){
+  const run=dayLock.then(async()=>{
+    if(!drv){drv={};if(drvRef){try{const s=await drvRef.get();if(s.exists)drv=s.data()||{}}catch(e){}}}
+    if(!drv.rootId){const f=await driveCreate({title:'Lucky Corporation – Gambar',contentMimeType:FOLDER_MIME});drv.rootId=f.id;drv.rootUrl=folderUrl(f)}
+    const d=dayWIB();drv.days=drv.days||{};
+    if(!drv.days[d]){const f=await driveCreate({title:d,contentMimeType:FOLDER_MIME,parentId:drv.rootId});drv.days[d]={id:f.id,url:folderUrl(f)};if(drvRef)await drvRef.set({...drv,updated:Date.now()}).catch(()=>{})}
+    return drv.days[d];
+  });
+  dayLock=run.catch(()=>{});return run;
+}
+async function saveVisualToDrive(id,canv,noteEl){
+  const t=tasks.find(x=>x.id===id);if(!t||!mcp)return false;
+  const w=WK[t.div];if(w&&!w.mood){w.mood='Menyimpan gambar ke Drive…';updateOffice()}
+  try{
+    const day=await dayFolder(),base=fileSafe(t.judul||'gambar'),files=[];
+    for(let i=0;i<canv.length;i++){
+      if(noteEl)noteEl.textContent=`Mengunggah gambar ${i+1}/${canv.length} ke Google Drive…`;
+      const f=await driveCreate({title:`${base}${canv.length>1?'-'+(i+1):''}.png`,base64Content:canv[i].toDataURL('image/png').split(',')[1],contentMimeType:'image/png',disableConversionToGoogleType:true,parentId:day.id});
+      files.push(f.viewUrl||f.webViewLink||`https://drive.google.com/file/d/${f.id}/view`);
+    }
+    patch(id,{gambar:{folder:day.url,files,n:files.length,at:Date.now()},gambarErr:''});
+    if(noteEl)noteEl.textContent=`Tersimpan di Google Drive (${files.length} file).`;
+    return true;
+  }catch(e){const msg=(e&&e.message)||'coba lagi';if(noteEl)noteEl.textContent='Gagal menyimpan gambar ke Drive: '+msg;patch(id,{gambarErr:msg});return false}
+  finally{if(w&&w.mood==='Menyimpan gambar ke Drive…'){w.mood='';updateOffice()}}
+}
+async function makeVisual(t,noteEl){
+  if(!sample)return null;const m=BY[t.div]||BY.lucky;
+  if(noteEl)noteEl.textContent=`${m.name} sedang membuat gambar jadi…`;
+  try{
+    const r=await sample(`Kamu ${m.name}, ${m.role} di Lucky Corporation. Ubah hasil kerja di bawah menjadi gambar jadi yang siap dipakai.
+${visualRule(m)}
+
+Jawab HANYA dengan blok visual itu.
+
+HASIL KERJA:
+${stripSlides(t.hasil).slice(0,6000)}`,{modelTier:'default',cache:false});
+    const txt=(r&&r.text)||'';let vis=parseVisual(txt);
+    if(!vis)vis=parseVisual('```visual\n'+((txt.match(/\{[\s\S]*\}/)||[''])[0])+'\n```');
+    if(!vis)throw new Error('format gambar tidak terbaca');
+    const cur=tasks.find(x=>x.id===t.id)||t;
+    patch(t.id,{hasil:stripSlides(cur.hasil)+'\n\n```visual\n'+JSON.stringify(vis)+'\n```'});
+    return vis;
+  }catch(e){if(noteEl)noteEl.textContent='Gagal membuat gambar: '+((e&&e.message)||'coba lagi');return null}
+}
+const visCache=new Map();
+async function canvasesFor(t,vis){
+  const key=t.id+'|'+(t.hasil||'').length;if(visCache.has(key))return visCache.get(key);
+  const p=visualCanvases(vis,(BY[t.div]||{}).dept);visCache.set(key,p);if(visCache.size>30)visCache.delete(visCache.keys().next().value);return p;
+}
+const noVisual=t=>!!(t.opus||/^Video clipper/.test(t.text||''));
+async function autoVisual(id){
+  let t=tasks.find(x=>x.id===id);if(!t||!t.hasil||noVisual(t))return;
+  let vis=parseVisual(t.hasil);
+  if(!vis)vis=await makeVisual(t,null);
+  t=tasks.find(x=>x.id===id);if(!vis||!t)return;
+  if(openId===id)openSheet(id,true);
+  if(!mcp)return;
+  await saveVisualToDrive(id,await canvasesFor(t,vis),null);
+}
+async function renderVisual(vis,t){
   const box=$('#car');if(!box)return;
-  const canv=[];for(let i=0;i<slides.length;i++)canv.push(await slideCanvas(slides[i],i,slides.length));
-  if(!$('#car'))return;
-  box.innerHTML=`<b>Slide carousel siap posting (${slides.length})</b><div class="car-strip">${canv.map((c,i)=>`<img alt="Slide ${i+1}" src="${c.toDataURL('image/png')}">`).join('')}</div><div class="acts"><button class="btn pri" type="button" id="carZip">Unduh semua (ZIP)</button>${canv.map((c,i)=>`<button class="btn" type="button" data-sl="${i}">Slide ${i+1}</button>`).join('')}</div><p class="note" id="carNote"></p>`;
-  const blobOf=c=>new Promise(r=>c.toBlob(r,'image/png'));const base=fileSafe(t.judul||'carousel');
-  box.querySelectorAll('[data-sl]').forEach(b=>b.onclick=async()=>offerFile(`${base}-${+b.dataset.sl+1}.png`,await blobOf(canv[+b.dataset.sl]),$('#carNote')));
-  $('#carZip').onclick=async()=>{const n=$('#carNote');n.textContent='Menyiapkan ZIP…';
+  const canv=await canvasesFor(t,vis);if(!$('#car')||openId!==t.id)return;
+  const g=t.gambar,one=canv.length===1;
+  box.innerHTML=`<b>Gambar jadi · ${VIS_NAME[vis.format]} (${canv.length})</b><div class="car-strip">${canv.map((c,i)=>`<img alt="Gambar ${i+1}" src="${c.toDataURL('image/png')}">`).join('')}</div><div class="acts">${one?'':'<button class="btn pri" type="button" id="carZip">Unduh semua (ZIP)</button>'}${canv.map((c,i)=>`<button class="btn${one?' pri':''}" type="button" data-sl="${i}">${one?'Unduh PNG':'Gambar '+(i+1)}</button>`).join('')}${g&&g.folder?`<a class="btn" href="${esc(g.folder)}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">Buka folder Drive</a>`:''}${mcp?`<button class="btn" type="button" id="carDrive">${g&&g.folder?'Simpan ulang ke Drive':'Simpan ke Drive'}</button>`:''}</div><p class="note" id="carNote">${g&&g.folder?`Tersimpan otomatis di Google Drive (${g.n} file).`:t.gambarErr?`Simpan otomatis ke Drive gagal: ${esc(t.gambarErr)}`:mcp?'Sedang disimpan ke Google Drive…':''}</p>`;
+  const blobOf=c=>new Promise(r=>c.toBlob(r,'image/png'));const base=fileSafe(t.judul||'gambar');
+  box.querySelectorAll('[data-sl]').forEach(b=>b.onclick=async()=>offerFile(`${base}${one?'':'-'+(+b.dataset.sl+1)}.png`,await blobOf(canv[+b.dataset.sl]),$('#carNote')));
+  const zb=$('#carZip');if(zb)zb.onclick=async()=>{const n=$('#carNote');n.textContent='Menyiapkan ZIP…';
     try{if(!window.JSZip)await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s)});
       const z=new JSZip();for(let i=0;i<canv.length;i++)z.file(`${base}-${i+1}.png`,await blobOf(canv[i]));
-      await offerFile(base+'.zip',await z.generateAsync({type:'blob'}),n)}catch(e){n.textContent='ZIP gagal dibuat; unduh per slide.'}};
+      await offerFile(base+'.zip',await z.generateAsync({type:'blob'}),n)}catch(e){n.textContent='ZIP gagal dibuat; unduh per gambar.'}};
+  const db=$('#carDrive');if(db)db.onclick=async()=>{db.disabled=true;await saveVisualToDrive(t.id,canv,$('#carNote'));db.disabled=false};
 }
 
 /* ===== Video clipper (Zuzu) ===== */
@@ -1878,6 +2045,7 @@ cap('db').then(db=>{
   ibRef=db.doc('settings/ibadah');ibRef.get().then(s=>{if(s.exists&&window.applyPraySettings)applyPraySettings(s.data())}).catch(()=>{});
   stRef=db.doc('settings/studio');
   stRef.get().then(s=>{if(s.exists){const d=s.data();stProfile=String(d.text||'');stSheet=String(d.sheetId||'');$('#stProf').value=stProfile;$('#stSheet').value=stSheet?'https://docs.google.com/spreadsheets/d/'+stSheet:''}}).catch(()=>{});
+  drvRef=db.doc('settings/drive');
   ofaRef=db.doc('settings/ofa');
   ofaRef.get().then(s=>{if(s.exists){ofaId=String(s.data().spreadsheetId||'');$('#ofaId').value=ofaId?'https://docs.google.com/spreadsheets/d/'+ofaId:''}ofaChip()}).catch(()=>ofaChip());
 });
