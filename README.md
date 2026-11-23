@@ -14,7 +14,10 @@ Kantor 3D WebGL (Three.js) bergaya kantor kartun yang sibuk, dengan dinding bata
 
 ## Fitur
 
-- Kantor 3D WebGL dengan cahaya dan bayangan nyata: geser untuk memutar, scroll/cubit untuk zoom, tombol Tur untuk kamera otomatis. Kalau browser tidak mendukung WebGL, papan tugas tetap berfungsi.
+- Kantor 3D WebGL dengan cahaya dan bayangan nyata. Kalau browser tidak mendukung WebGL, papan tugas tetap berfungsi.
+- Kamera bebas:
+  - **Komputer:** seret untuk memutar · klik kanan / Shift + seret untuk menggeser · scroll untuk zoom ke arah kursor · klik 2x untuk terbang ke titik itu · WASD/panah bergerak · Q/E memutar · Z/X memiringkan (sampai tampak atas) · +/− zoom · R reset · 1–4 pindah ruangan · F layar penuh · G ganti mode Putar/Geser.
+  - **HP:** dua jari untuk menggeser, cubit untuk zoom, putar dua jari untuk memutar · ketuk 2x untuk terbang ke titik · tombol "Putar/Geser" mengubah fungsi seret satu jari · tombol arah (✥) bisa disembunyikan.
 - Pegawai bergerak: berjalan dengan tangan dan kaki berayun, mengetik dengan layar monitor menyala, Lucky membawa kertas tugas, pegawai mengambil kopi, dan kertas beterbangan saat tugas selesai.
 - Papan tugas: Antrian → Dikerjakan → Siap dicek → Selesai.
 - Profil toko yang dibaca semua karyawan sebelum bekerja.
@@ -25,7 +28,7 @@ Kantor 3D WebGL (Three.js) bergaya kantor kartun yang sibuk, dengan dinding bata
 
 **Lukky Studio** (Lucky Sprouts, ruang kedua di sebelah kanan): Pip (Produk & Template), Mochi (Konten Instagram), Kiko (Order & Admin DM), Tumi (Jasa Custom & Dashboard), Bobo (Keuangan Studio), Zuzu (Video Clipper). Mereka membaca Profil Lukky Studio dan catatan penjualan (identitas pembeli disembunyikan). Profil dan ID spreadsheet disimpan di pengaturan akun Claude, tidak di kode ini.
 
-Tombol di kiri atas kantor memindahkan kamera: Operasional Toko · Lukky Studio · Semua.
+Tombol di kiri atas kantor memindahkan kamera: Operasional Toko · Lukky Studio · Masjid · Semua.
 
 ## Masjid Lucky (Ibadah)
 

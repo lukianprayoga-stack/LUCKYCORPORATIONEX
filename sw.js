@@ -1,5 +1,5 @@
 /* Lucky Corporation service worker: network first, cached shell as offline fallback. */
-const CACHE = 'lucky-corp-v2';
+const CACHE = 'lucky-corp-v3';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon.svg', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

@@ -87,6 +87,17 @@ body.noscroll{overflow:hidden}
 .seg button{border:0;background:none;border-radius:9px;min-height:36px;padding:0 12px;font-weight:700;font-size:14px;color:var(--muted)}
 .seg button[aria-pressed=true]{background:var(--bg);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 @media (max-width:760px){.cam{top:auto;bottom:12px}.rooms button{padding:0 9px;font-size:13px}}
+.stage:focus-visible{outline:3px solid #3a5bd9;outline-offset:3px}
+.stage.panning{cursor:move}
+.dpad{position:absolute;right:12px;bottom:12px;z-index:5;display:grid;grid-template-columns:repeat(3,40px);grid-auto-rows:40px;gap:4px;padding:6px;border-radius:16px;background:rgba(255,255,255,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 6px 18px -10px rgba(0,0,0,.45);touch-action:none}
+.dpad button{border:0;border-radius:10px;background:rgba(255,255,255,.95);color:#141a33;font-weight:800;font-size:15px;line-height:1;padding:0;box-shadow:0 2px 6px -3px rgba(0,0,0,.35);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.dpad button.on,.dpad button:active{background:#141a33;color:#fff}
+.stage.nopad .dpad{display:none}
+.stage:not(.nopad) #camL,.stage:not(.nopad) #camR{display:none}
+.dpad button.tilt{font-size:16px;background:rgba(232,236,250,.95)}
+.hint .hint-m{display:none}
+@media (max-width:760px){#camFull span{display:none}#camFull svg{margin-right:0!important}.cam button{padding:0 10px}.dpad{top:50%;bottom:auto;transform:translateY(-50%);grid-template-columns:repeat(3,34px);grid-auto-rows:34px;gap:3px;padding:4px;right:6px;background:rgba(255,255,255,.5)}.dpad button{font-size:13px}.hint .hint-d{display:none}.hint .hint-m{display:inline}.stage .hint{bottom:66px;left:10px;right:auto;font-size:12px;max-width:calc(100% - 20px)}}
+@media (hover:none) and (min-width:761px){.hint .hint-d{display:none}.hint .hint-m{display:inline}}
 .hint{position:absolute;left:14px;bottom:12px;z-index:5;font-size:13px;font-weight:600;color:light-dark(#3b4270,#c3c8ea);background:light-dark(rgba(255,255,255,.75),rgba(0,0,0,.35));padding:4px 10px;border-radius:99px}
 .fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;font-weight:600;color:var(--muted)}
 .fallback.on{display:flex}
@@ -175,7 +186,7 @@ body.noscroll{overflow:hidden}
 .err{color:#d23a1e;font-weight:600}
 .scroll{overflow-x:auto}
 @media (max-width:980px){.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:760px){.presets{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.presets button{flex:none}.cmd{grid-template-columns:1fr 1fr}.cmd textarea,.go{grid-column:1/-1}.hint{display:none}}
+@media (max-width:760px){.presets{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.presets button{flex:none}.cmd{grid-template-columns:1fr 1fr}.cmd textarea,.go{grid-column:1/-1}}
 @media (max-width:520px){.board{grid-template-columns:1fr}}
 </style>
 </head>
@@ -206,7 +217,7 @@ body.noscroll{overflow:hidden}
 </div>
 
 <div class="band" style="padding-top:0">
-  <div class="stage" id="stage" aria-label="Kantor 3D Lucky Corporation. Geser untuk memutar, scroll untuk zoom, ketuk pegawai untuk memfilter tugas.">
+  <div class="stage" id="stage" tabindex="0" aria-label="Kantor 3D Lucky Corporation. Seret untuk memutar, klik kanan atau dua jari untuk menggeser, scroll untuk zoom, ketuk dua kali untuk terbang ke titik, tombol WASD dan panah untuk bergerak, ketuk pegawai untuk memfilter tugas.">
     <div class="loading" id="loading">Menyiapkan kantor 3D…</div>
     <canvas id="gl"></canvas>
     <div id="labels"></div>
@@ -214,6 +225,8 @@ body.noscroll{overflow:hidden}
     <div class="cam">
       <button type="button" id="camL" aria-label="Putar kiri">⟲</button>
       <button type="button" id="camR" aria-label="Putar kanan">⟳</button>
+      <button type="button" id="camMode" aria-pressed="false">⟳ Putar</button>
+      <button type="button" id="camPad" aria-pressed="true" aria-label="Tampilkan tombol arah" title="Tampilkan / sembunyikan tombol arah">✥</button>
       <button type="button" id="camTour" aria-pressed="true">Tur</button>
       <button type="button" id="camReset">Reset</button>
       <button type="button" id="camFull" aria-pressed="false" title="Layar penuh"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M1.5 5.5v-4h4M10.5 1.5h4v4M14.5 10.5v4h-4M5.5 14.5h-4v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Layar penuh</span></button>
@@ -225,7 +238,18 @@ body.noscroll{overflow:hidden}
       <button type="button" data-room="masjid" aria-pressed="false">Masjid</button>
       <button type="button" data-room="all" aria-pressed="false">Semua</button>
     </div>
-    <div class="hint">Geser untuk memutar · scroll / cubit untuk zoom · ketuk pegawai</div>
+    <div class="dpad" role="group" aria-label="Arahkan kamera">
+      <button type="button" data-act="rotL" aria-label="Putar kiri" title="Putar kiri (Q)">⟲</button>
+      <button type="button" data-act="up" aria-label="Geser maju" title="Maju (W / ↑)">▲</button>
+      <button type="button" data-act="rotR" aria-label="Putar kanan" title="Putar kanan (E)">⟳</button>
+      <button type="button" data-act="left" aria-label="Geser kiri" title="Kiri (A / ←)">◀</button>
+      <button type="button" data-act="tiltU" aria-label="Lihat dari atas" title="Miringkan ke atas (Z)" class="tilt">⤒</button>
+      <button type="button" data-act="right" aria-label="Geser kanan" title="Kanan (D / →)">▶</button>
+      <button type="button" data-act="out" aria-label="Perkecil" title="Zoom keluar (−)">−</button>
+      <button type="button" data-act="down" aria-label="Geser mundur" title="Mundur (S / ↓)">▼</button>
+      <button type="button" data-act="in" aria-label="Perbesar" title="Zoom masuk (+)">+</button>
+    </div>
+    <div class="hint"><span class="hint-d">Seret: putar · Klik kanan / Shift + seret: geser · Ketuk 2x: terbang ke titik · WASD, Q/E, Z/X, +/−</span><span class="hint-m">2 jari: geser, zoom &amp; putar · ketuk 2x: terbang ke titik</span></div>
   </div>
 
   <div class="bhead">
@@ -759,26 +783,129 @@ function init3D(){
     camera.updateMatrixWorld();
   }
   const stopTour=()=>{if(cam.tour){cam.tour=false;$('#camTour').setAttribute('aria-pressed','false')}};
-  let drag=null;const pts=new Map();
-  stage.addEventListener('pointerdown',e=>{if(e.target.closest('.cam'))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=false;drag={x:e.clientX,y:e.clientY,yaw:cam.yaw,pitch:cam.pitch,r:cam.r,dist:0};stage.classList.add('drag')});
+  /* flexible camera: orbit · pan · zoom · fly-to · keyboard · d-pad */
+  const LIM={rMin:5,rMax:46,pMin:.12,pMax:1.48,x:24,z:10};
+  const clampT=()=>{target.x=Math.min(LIM.x,Math.max(-LIM.x,target.x));target.z=Math.min(LIM.z,Math.max(-LIM.z,target.z))};
+  const clampR=v=>Math.min(LIM.rMax,Math.max(LIM.rMin,v));
+  const manual=()=>{stopTour();cam.anim=null};
+  function panBy(dxPx,dyPx){
+    const h=stage.clientHeight||600,k=(cam.r*(camera.aspect<1?1.65:camera.aspect<1.4?1.2:1))*1.1/h;
+    const sy=Math.sin(cam.yaw),cy=Math.cos(cam.yaw),sp=Math.max(.45,Math.sin(cam.pitch));
+    target.x+=(-cy*dxPx - sy*dyPx/sp)*k;
+    target.z+=( sy*dxPx - cy*dyPx/sp)*k;
+    clampT();
+  }
+  window.__cam=cam;window.__camTarget=target;window.__panBy=panBy;
+  let mode='orbit';
+  const modeBtn=$('#camMode');
+  function setMode(m){mode=m;if(modeBtn){modeBtn.setAttribute('aria-pressed',m==='pan');modeBtn.textContent=m==='pan'?'✥ Geser':'⟳ Putar';modeBtn.title=m==='pan'?'Seret satu jari = menggeser. Ketuk untuk ganti ke memutar':'Seret satu jari = memutar. Ketuk untuk ganti ke menggeser'}}
+  if(modeBtn)modeBtn.onclick=()=>setMode(mode==='pan'?'orbit':'pan');
+  setMode('orbit');
+  let drag=null;const pts=new Map();let lastTap={t:0,x:0,y:0};
+  stage.addEventListener('contextmenu',e=>{if(!e.target.closest('.cam,.dpad,.rooms'))e.preventDefault()});
+  stage.addEventListener('pointerdown',e=>{
+    if(e.target.closest('.cam,.dpad,.rooms'))return;
+    pts.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=false;
+    const panBtn=e.button===2||e.button===1||e.shiftKey||e.ctrlKey&&e.pointerType==='mouse';
+    drag={x:e.clientX,y:e.clientY,yaw:cam.yaw,pitch:cam.pitch,r:cam.r,dist:0,pan:panBtn||mode==='pan',mx:null,my:null,lx:e.clientX,ly:e.clientY};
+    if(pts.size===2){const [p1,p2]=[...pts.values()];drag.dist=Math.hypot(p1.x-p2.x,p1.y-p2.y);drag.r=cam.r;drag.mx=(p1.x+p2.x)/2;drag.my=(p1.y+p2.y)/2;drag.ang=Math.atan2(p2.y-p1.y,p2.x-p1.x);drag.yaw=cam.yaw}
+    stage.classList.add('drag');if(drag.pan)stage.classList.add('panning');
+    try{stage.setPointerCapture(e.pointerId)}catch(_){}
+  });
   stage.addEventListener('pointermove',e=>{
     if(!drag||!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    if(pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(!drag.dist)drag.dist=d;cam.anim=null;cam.r=Math.min(36,Math.max(7,drag.r*drag.dist/d));moved=true;stopTour();return}
-    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>5){moved=true;stopTour()}
-    if(!moved)return;cam.yaw=drag.yaw-dx*.006;cam.pitch=Math.min(1.3,Math.max(.18,drag.pitch+dy*.004));
+    if(pts.size>=2){
+      const [p1,p2]=[...pts.values()],d=Math.hypot(p1.x-p2.x,p1.y-p2.y),mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2,ang=Math.atan2(p2.y-p1.y,p2.x-p1.x);
+      if(!drag.dist){drag.dist=d;drag.r=cam.r;drag.mx=mx;drag.my=my;drag.ang=ang;drag.yaw=cam.yaw}
+      manual();moved=true;
+      cam.r=clampR(drag.r*drag.dist/Math.max(1,d));
+      panBy(mx-drag.mx,my-drag.my);drag.mx=mx;drag.my=my;
+      let da=Math.atan2(Math.sin(ang-drag.ang),Math.cos(ang-drag.ang));da=Math.abs(da)<.08?0:da-Math.sign(da)*.08;cam.yaw=drag.yaw-da;
+      return;
+    }
+    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>5){moved=true;manual()}
+    if(!moved)return;
+    if(drag.pan){panBy(e.clientX-drag.lx,e.clientY-drag.ly)}
+    else{cam.yaw=drag.yaw-dx*.006;cam.pitch=Math.min(LIM.pMax,Math.max(LIM.pMin,drag.pitch+dy*.004))}
+    drag.lx=e.clientX;drag.ly=e.clientY;
   });
   const ray=new T.Raycaster(),ndc=new T.Vector2();
+  function groundAt(cx,cy){
+    const r=canvas.getBoundingClientRect();ndc.set(((cx-r.left)/r.width)*2-1,-((cy-r.top)/r.height)*2+1);
+    ray.setFromCamera(ndc,camera);const R0=ray.ray;if(!R0||!R0.direction)return null;
+    const o=R0.origin,d=R0.direction;if(d.y>-1e-4)return null;const t=-o.y/d.y;
+    return {x:o.x+d.x*t,z:o.z+d.z*t};
+  }
+  function flyTo(x,z,zoomIn){manual();cam.anim={x:Math.min(LIM.x,Math.max(-LIM.x,x)),z:Math.min(LIM.z,Math.max(-LIM.z,z)),r:zoomIn?clampR(Math.min(cam.r*.7,Math.max(9,cam.r*.7))):cam.r}}
+  window.__flyTo=flyTo;
   const end=e=>{
-    if(pts.size===1&&!moved&&e.type==='pointerup'){
-      const r=canvas.getBoundingClientRect();ndc.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);
-      ray.setFromCamera(ndc,camera);const hit=ray.intersectObjects(pickables,false)[0];
-      if(hit){const id=hit.object.userData.id;filter=filter===id?null:id;renderBoard();updateOffice()}
+    if(pts.size===1&&!moved&&e.type==='pointerup'&&drag&&e.button!==2&&e.button!==1){
+      const now=performance.now(),dbl=now-lastTap.t<330&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<30;
+      if(dbl){lastTap.t=0;const g=groundAt(e.clientX,e.clientY);if(g)flyTo(g.x,g.z,true)}
+      else{
+        lastTap={t:now,x:e.clientX,y:e.clientY};
+        const r=canvas.getBoundingClientRect();ndc.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);
+        ray.setFromCamera(ndc,camera);const hit=ray.intersectObjects(pickables,false)[0];
+        if(hit){const id=hit.object.userData.id;filter=filter===id?null:id;renderBoard();updateOffice()}
+      }
     }
-    pts.delete(e.pointerId);if(!pts.size){drag=null;stage.classList.remove('drag')}
+    pts.delete(e.pointerId);
+    if(pts.size===1&&drag){const [p]=[...pts.values()];drag.x=drag.lx=p.x;drag.y=drag.ly=p.y;drag.yaw=cam.yaw;drag.pitch=cam.pitch;drag.dist=0}
+    if(!pts.size){drag=null;stage.classList.remove('drag','panning')}
   };
   stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',end);
-  stage.addEventListener('wheel',e=>{e.preventDefault();stopTour();cam.anim=null;cam.r=Math.min(36,Math.max(7,cam.r*(e.deltaY>0?1.08:.92)))},{passive:false});
-  $('#camL').onclick=()=>{stopTour();cam.yaw-=.6};$('#camR').onclick=()=>{stopTour();cam.yaw+=.6};
+  stage.addEventListener('wheel',e=>{
+    e.preventDefault();manual();
+    if(e.shiftKey&&!e.ctrlKey){panBy(-(e.deltaX||e.deltaY)*.6,0);return}
+    const f=Math.exp(Math.max(-1,Math.min(1,e.deltaY*(e.deltaMode?0.05:0.0015))));
+    const before=cam.r;cam.r=clampR(cam.r*f);
+    // zoom toward cursor
+    const g=groundAt(e.clientX,e.clientY);if(g&&cam.r<before){const k=1-cam.r/before;target.x+=(g.x-target.x)*k*.85;target.z+=(g.z-target.z)*k*.85;clampT()}
+  },{passive:false});
+  $('#camL').onclick=()=>{manual();cam.anim={x:target.x,z:target.z,r:cam.r,yaw:cam.yaw-.6}};
+  $('#camR').onclick=()=>{manual();cam.anim={x:target.x,z:target.z,r:cam.r,yaw:cam.yaw+.6}};
+  /* held keys / d-pad: continuous movement */
+  const held=new Set();
+  let stageHot=false;
+  stage.addEventListener('pointerenter',()=>stageHot=true);stage.addEventListener('pointerleave',()=>stageHot=false);
+  stage.addEventListener('pointerdown',()=>{stageHot=true;if(document.activeElement&&document.activeElement!==stage&&!stage.contains(document.activeElement))try{stage.focus({preventScroll:true})}catch(_){}},true);
+  const KEYMAP={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',KeyQ:'rotL',KeyE:'rotR',Equal:'in',NumpadAdd:'in',Minus:'out',NumpadSubtract:'out',PageUp:'tiltU',PageDown:'tiltD',KeyZ:'tiltU',KeyX:'tiltD'};
+  const typing=el=>el&&(el.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
+  const camKeysActive=()=>(stageHot||stage.contains(document.activeElement)||stage.classList.contains('full'))&&!(typeof openId!=='undefined'&&openId);
+  document.addEventListener('keydown',e=>{
+    if(typing(e.target)||e.metaKey||e.altKey||e.ctrlKey)return;
+    if(!camKeysActive())return;
+    const a=KEYMAP[e.code];
+    if(a){e.preventDefault();if(!held.has(a))manual();held.add(a);return}
+    if(e.code==='KeyR'){e.preventDefault();goRoom(room)}
+    else if(e.code==='KeyF'){e.preventDefault();$('#camFull').click()}
+    else if(e.code==='KeyG'){e.preventDefault();setMode(mode==='pan'?'orbit':'pan')}
+    else if(/^Digit[1-4]$/.test(e.code)){e.preventDefault();goRoom(['toko','studio','masjid','all'][+e.code.slice(5)-1])}
+  });
+  document.addEventListener('keyup',e=>{const a=KEYMAP[e.code];if(a)held.delete(a)});
+  window.addEventListener('blur',()=>held.clear());
+  const padBtn=$('#camPad');
+  function setPad(v){stage.classList.toggle('nopad',!v);padBtn.setAttribute('aria-pressed',v);try{localStorage.setItem('lc_dpad',v?'1':'0')}catch(_){}}
+  let padPref=null;try{padPref=localStorage.getItem('lc_dpad')}catch(_){}
+  setPad(padPref==null?true:padPref==='1');
+  padBtn.onclick=()=>setPad(stage.classList.contains('nopad'));
+  document.querySelectorAll('.dpad [data-act]').forEach(btn=>{
+    const act=btn.dataset.act;
+    const on=e=>{e.preventDefault();e.stopPropagation();manual();held.add(act);btn.classList.add('on');try{btn.setPointerCapture(e.pointerId)}catch(_){}};
+    const off=e=>{held.delete(act);btn.classList.remove('on')};
+    btn.addEventListener('pointerdown',on);btn.addEventListener('pointerup',off);btn.addEventListener('pointercancel',off);btn.addEventListener('lostpointercapture',off);
+    btn.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();manual();held.add(act);setTimeout(()=>held.delete(act),220)}});
+    btn.addEventListener('contextmenu',e=>e.preventDefault());
+  });
+  function camStep(dt){
+    if(!held.size)return;
+    const sp=(stage.clientHeight||600)*.45*dt;
+    if(held.has('up'))panBy(0,sp);if(held.has('down'))panBy(0,-sp);
+    if(held.has('left'))panBy(sp,0);if(held.has('right'))panBy(-sp,0);
+    if(held.has('rotL'))cam.yaw-=1.3*dt;if(held.has('rotR'))cam.yaw+=1.3*dt;
+    if(held.has('in'))cam.r=clampR(cam.r*Math.exp(-1.1*dt));if(held.has('out'))cam.r=clampR(cam.r*Math.exp(1.1*dt));
+    if(held.has('tiltU'))cam.pitch=Math.min(LIM.pMax,cam.pitch+.9*dt);if(held.has('tiltD'))cam.pitch=Math.max(LIM.pMin,cam.pitch-.9*dt);
+  }
   const ROOMS={toko:{x:0,z:-.6,r:17.5,yaw:.42,pitch:.58},studio:{x:SX,z:-.6,r:13.5,yaw:.42,pitch:.58},masjid:{x:MX+.6,z:-1.8,r:15.5,yaw:-.5,pitch:.5},all:{x:-.2,z:-.6,r:34,yaw:.05,pitch:.92}};let room='toko';
   function goRoom(k){room=k;window.__room=k;cam.anim=Object.assign({},ROOMS[k]);document.querySelectorAll('.rooms button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.room===k))}
   document.querySelectorAll('.rooms button').forEach(b=>b.onclick=()=>goRoom(b.dataset.room));
@@ -802,6 +929,7 @@ function init3D(){
     if(document.hidden)return;
     const t=nowMs/1000,dt=Math.min(.05,t-last);last=t;
     if(cam.anim){const k=Math.min(1,dt*3);target.x+=(cam.anim.x-target.x)*k;target.z+=(cam.anim.z-target.z)*k;cam.r+=(cam.anim.r-cam.r)*k;if(cam.anim.yaw!=null){let dy=Math.atan2(Math.sin(cam.anim.yaw-cam.yaw),Math.cos(cam.anim.yaw-cam.yaw));cam.yaw+=dy*k;cam.base=cam.yaw-(cam.tour?.32*Math.sin((t-cam.t0)/6):0)}if(cam.anim.pitch!=null)cam.pitch+=(cam.anim.pitch-cam.pitch)*k;if(Math.abs(cam.anim.x-target.x)<.02&&Math.abs(cam.anim.r-cam.r)<.05)cam.anim=null}
+    camStep(dt);
     if(cam.tour&&!drag)cam.yaw=cam.base+.32*Math.sin((t-cam.t0)/6);
     placeCam();
     paperTimer+=dt;
