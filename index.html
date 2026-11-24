@@ -276,7 +276,7 @@ body.noscroll{overflow:hidden}
       <label class="btn file">Unggah suara adzan<input id="prayAudio" type="file" accept="audio/*"></label>
       <label class="btn file">Adzan Subuh (opsional)<input id="prayAudioSubuh" type="file" accept="audio/*"></label>
     </div>
-    <p class="note" id="prayNote">Saat waktu sholat tiba, Bilal mengumandangkan adzan di masjid. Tekan "Aktifkan suara adzan" sekali agar suara bisa berbunyi otomatis. Notifikasi ke HP saat dashboard tertutup dikirim oleh tugas terjadwal Claude.</p>
+    <p class="note" id="prayNote">Saat waktu sholat tiba, Bilal mengumandangkan adzan di masjid. Suara adzan dan notifikasi menyala otomatis begitu halaman ini disentuh pertama kali (aturan browser). Notifikasi ke HP saat dashboard tertutup dikirim otomatis oleh tugas terjadwal Claude setiap waktu sholat.</p>
   </section>
 
   <section class="clip" id="clip" aria-labelledby="clipH">
@@ -1953,6 +1953,20 @@ let ibRef=null;
   $('#prayNotif').onclick=async()=>{try{if(!('Notification' in window))throw 0;const r=await Notification.requestPermission();$('#prayNotif').setAttribute('aria-pressed',r==='granted');$('#prayNotif').textContent=r==='granted'?'Notifikasi aktif':'Notifikasi ditolak'}catch(e){$('#prayNotif').textContent='Notifikasi tidak tersedia di sini';$('#prayNote').textContent='Tampilan ini tidak bisa memunculkan notifikasi browser. Pakai aplikasi HP (versi GitHub) atau notifikasi dari tugas terjadwal Claude.'}};
   $('#prayTest').onclick=async()=>{await unlock();$('#praySound').setAttribute('aria-pressed',true);$('#praySound').textContent='Suara adzan aktif';const {t}=draw();const k=FARD.find(x=>toMin(t[x])>wib().min)||'subuh';adzan(k,hm(t[k]),true);if(window.__goRoom)window.__goRoom('masjid')};
   for(const [id,key] of [['#prayAudio','adzan'],['#prayAudioSubuh','subuh']])$(id).onchange=async e=>{const f=e.target.files[0];if(!f)return;try{await idbPut(key,f);delete bufs[key];$('#prayNote').textContent=`Suara ${key==='subuh'?'adzan Subuh':'adzan'} tersimpan di perangkat ini (${(f.size/1048576).toFixed(1)} MB).`}catch(err){$('#prayNote').textContent='Gagal menyimpan suara di perangkat ini.'}};
+  /* otomatis: suara adzan & notifikasi menyala sendiri, tanpa menekan tombol */
+  const AUTO_EV=['pointerdown','touchstart','keydown'];let armed=false;
+  function soundUi(ok){if(ok){$('#praySound').setAttribute('aria-pressed',true);$('#praySound').textContent='Suara adzan aktif (otomatis)'}}
+  function notifUi(){try{if(!('Notification' in window))return;const p=Notification.permission;$('#prayNotif').setAttribute('aria-pressed',p==='granted');if(p==='granted')$('#prayNotif').textContent='Notifikasi aktif (otomatis)';else if(p==='denied')$('#prayNotif').textContent='Notifikasi diblokir browser'}catch(e){}}
+  async function autoArm(){
+    if(armed)return;
+    const ok=await unlock();soundUi(ok);
+    try{if('Notification' in window&&Notification.permission==='default')await Notification.requestPermission()}catch(e){}
+    notifUi();
+    if(ok){armed=true;AUTO_EV.forEach(ev=>document.removeEventListener(ev,autoArm,true))}
+  }
+  AUTO_EV.forEach(ev=>document.addEventListener(ev,autoArm,true));
+  unlock().then(ok=>{if(ok&&pctx&&pctx.state==='running'){armed=true;soundUi(true)}});notifUi();
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&pctx&&pctx.state==='suspended'){armed=false;AUTO_EV.forEach(ev=>document.addEventListener(ev,autoArm,true));pctx.resume().then(()=>{if(pctx.state==='running'){armed=true;soundUi(true)}}).catch(()=>{})}});
   /* scheduler */
   function tick(){const {n,t}=draw();for(const k of FARD){const tm=toMin(t[k]),key=`${n.y}-${n.m}-${n.d}-${k}`;if(n.min>=tm&&n.min<tm+3&&ls.get('lucky-adzan-fired')!==key&&!tick.done?.[key]){tick.done=tick.done||{};tick.done[key]=1;ls.set('lucky-adzan-fired',key);adzan(k,hm(t[k]))}}}
   syncInputs();tick();setInterval(tick,10000);

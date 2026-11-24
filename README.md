@@ -35,8 +35,8 @@ Tombol di kiri atas kantor memindahkan kamera: Operasional Toko · Lukky Studio 
 Area masjid di sebelah kiri kantor toko (lewat pintu di dinding kiri): kubah, menara, mihrab, karpet shaf, mimbar, bedug, dan tempat wudhu. **Bilal** (muadzin) mengumandangkan adzan saat waktu sholat tiba: berjalan ke mihrab, mengangkat tangan, gelembung menampilkan lafaz adzan.
 
 - Jadwal sholat dihitung di halaman dalam **WIB (UTC+7)** dengan parameter Kemenag (Subuh 20°, Isya 18°, Ashar Syafi'i, ihtiyat 2 menit). Lokasi bawaan Solo Baru; bisa diganti kota lain atau koordinat sendiri. Ini hasil perhitungan; untuk kepastian rujuk jadwal resmi Kemenag/masjid setempat.
-- Suara: tekan "Aktifkan suara adzan" sekali. Unggah file adzan (dan adzan Subuh) agar yang berbunyi suara adzan; file disimpan di perangkat itu. Tanpa file, berbunyi nada pengingat.
-- Notifikasi browser bisa diaktifkan di aplikasi HP (versi GitHub). Notifikasi ke HP saat dashboard tertutup dikirim oleh tugas terjadwal di akun Claude.
+- Suara dan notifikasi menyala otomatis begitu halaman disentuh pertama kali (browser mewajibkan satu sentuhan; izin notifikasi diminta sekali per perangkat). Unggah file adzan (dan adzan Subuh) agar yang berbunyi suara adzan; file disimpan di perangkat itu. Tanpa file, berbunyi nada pengingat.
+- Notifikasi browser bisa diaktifkan di aplikasi HP (versi GitHub). Notifikasi ke HP saat dashboard tertutup dikirim otomatis oleh 5 tugas terjadwal di akun Claude (Adzan Subuh/Dzuhur/Ashar/Maghrib/Isya – Masjid Lucky). Tiap tugas berjalan setiap hari sebelum waktu sholat, menghitung jadwal hari itu dari lokasi di dashboard, menunggu sampai menitnya, lalu mengirim notifikasi; tidak perlu persetujuan harian.
 
 ## Produksi konten
 
